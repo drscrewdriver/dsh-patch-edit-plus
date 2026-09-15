@@ -5,7 +5,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/drscrewdriver/dsh-patch-edit-plus.git"
+    "url": "git+https://github.com/drscrewdriver/dsh-patch-edit-plus.git"
   },
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
