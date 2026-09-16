@@ -16,6 +16,22 @@ import { Config } from './config.js';
 import type { Config as PluginConfig } from './config.js';
 /** Cordis plugin name used by Loader diagnostics. */
 export declare const name = "dsh-patch-edit-plus";
+/**
+ * Services this plugin reads, declared for the loader BEFORE `apply` runs.
+ *
+ * Cordis resolves `ctx.<service>` through a proxy that throws
+ * `cannot get property "<name>" without inject` for anything not declared
+ * here, and the loader surfaces that as a fatal `plugin tree failed to load`.
+ * Both entries below are read unconditionally on the load path:
+ * - `tools` — `registerApplyPatchTool` probes and registers (`ctx.tools`).
+ * - `fs` — reads plus the official write-intent dance (`ctx.fs`).
+ *
+ * `shell` is deliberately NOT declared. Delete/Move is the only consumer and
+ * `resolveShell` probes it inside a `try/catch`, returning `undefined` when no
+ * executor is mounted; declaring it would instead refuse to load the plugin
+ * in every profile that has no shell capability.
+ */
+export declare const inject: string[];
 /** Settings namespace (a plain string literal: valid on every target version). */
 export declare const SETTINGS_NAMESPACE = "patch_edit_plus";
 export { Config };

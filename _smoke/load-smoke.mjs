@@ -21,13 +21,14 @@ let failures = 0
 const ok = (step, detail = '') => console.log(`  PASS  ${step}${detail ? ` — ${detail}` : ''}`)
 const bad = (step, err) => { failures += 1; console.log(`  FAIL  ${step} — ${err?.stack ?? err}`) }
 
-const { name, Config, apply } = await import(pathToFileURL(join(ROOT, 'lib/index.js')))
+const { name, Config, apply, inject } = await import(pathToFileURL(join(ROOT, 'lib/index.js')))
 
 try {
   if (name !== 'dsh-patch-edit-plus') throw new Error(`bad plugin name: ${name}`)
   if (typeof Config !== 'function' && typeof Config !== 'object') throw new Error('Config schema missing')
   if (typeof apply !== 'function') throw new Error('apply missing')
-  ok('plugin contract (name / Config / apply)')
+  if (!Array.isArray(inject)) throw new Error(`plugin must export an inject array, got: ${JSON.stringify(inject)}`)
+  ok('plugin contract (name / Config / apply / inject)')
 } catch (error) { bad('plugin contract', error) }
 
 // cordis-shaped stub host context with a memory fs.
@@ -65,20 +66,61 @@ const waterfallCalls = []
 const emitCalls = []
 const registered = new Map()
 const disposers = []
-const ctx = {
-  fs,
-  logger: { info: () => {}, warn: () => {}, error: () => {} },
-  effect: (fn) => { const d = fn(); if (typeof d === 'function') disposers.push(d); return d },
-  inject: (deps, cb) => cb({ settings: { installSection: () => {} } }),
-  get: () => undefined,
+/**
+ * Cordis resolves `ctx.<service>` through a proxy: properties that exist on the
+ * context object itself are returned directly, and everything else goes through
+ * the inject gate, which throws `cannot get property "<name>" without inject`
+ * for any service the plugin did not declare. In a real profile the services
+ * are NOT properties of the context object — they live in the loader's store —
+ * so the gate is the only way to reach them.
+ *
+ * This stub mirrors that split exactly. Mounting `tools` / `fs` straight onto
+ * the context object (as this file used to) makes the gate unreachable, which
+ * is how a missing `inject` declaration survived a green smoke run and then
+ * took down `dsh web` with `plugin tree failed to load`.
+ *
+ * `shell` is intentionally NOT mounted and NOT declared: `resolveShell` probes
+ * it inside a try/catch and must observe the same throw a profile without a
+ * shell executor produces.
+ */
+const HOST_SERVICES = {
   tools: {
     get: (n) => registered.get(n),
     register: (def) => { registered.set(def.name, def); return () => registered.delete(def.name) },
     schemas: () => [...registered.keys()],
   },
+  fs,
+  // shell / sandbox / attachments / subprocess are not mounted in this stub.
+}
+const declaredServices = new Set(inject)
+
+const rawCtx = {
+  logger: { info: () => {}, warn: () => {}, error: () => {} },
+  effect: (fn) => { const d = fn(); if (typeof d === 'function') disposers.push(d); return d },
+  inject: (deps, cb) => cb({ settings: { installSection: () => {} } }),
+  get: () => undefined,
   waterfall: async (event, target, exec, next) => { waterfallCalls.push(event); return next() },
   emit: (event, ...args) => emitCalls.push([event, ...args]),
 }
+
+const ctx = new Proxy(rawCtx, {
+  get(target, prop, receiver) {
+    if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver)
+    if (typeof prop === 'string' && Object.hasOwn(HOST_SERVICES, prop)) {
+      if (!declaredServices.has(prop)) throw new Error(`cannot get property "${prop}" without inject`)
+      return HOST_SERVICES[prop]
+    }
+    return undefined
+  },
+})
+
+try {
+  const lazy = ['shell', 'sandbox', 'attachments', 'subprocess'].filter(s => declaredServices.has(s))
+  if (lazy.length > 0) throw new Error(`these services must stay out of inject (probed defensively): ${lazy.join(', ')}`)
+  const uncovered = ['tools', 'fs'].filter(s => !declaredServices.has(s))
+  if (uncovered.length > 0) throw new Error(`load-path services missing from inject: ${uncovered.join(', ')}`)
+  ok('inject covers the load path; lazily probed services stay out')
+} catch (error) { bad('inject shape', error) }
 
 try {
   apply(ctx, {})
