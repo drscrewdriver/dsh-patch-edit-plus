@@ -100,6 +100,7 @@ dsh web --dump-config   # verify the plugin row appears
 ## 制限事項（開示）
 
 - **削除/移動は `ctx.shell` を通じて実行されます。** サンドボックスの強度は、ロードされたシェルエグゼキュータが強制する内容（`bash-sandbox` は境界を設け、`bash-local` は設けません）と同じであり、ネイティブ bash ツールと同じリスク態勢です。すべてのリクエストは `sandboxPolicy` を伴い、サンドボックスの事実を報告するため、「ポリシーによる拒否」と「コマンド失敗」を区別できます。
+- **すべての書き込みとすべての削除/移動がセッションスコープのポリシーを伴います。** `apply_patch` は呼び出しごとに `ctx.sandboxPolicy.resolve({ session })` を解決し(セッションのモードオーバーライドと、ワークスペースルートとしてのセッション cwd)、ネイティブの `write`/`edit` ツールとまったく同じにし、パスの計画も同じルートに対して行います。これがないと、強制実行するファイルシステムはデプロイメントルートにフォールバックし、`danger-full-access` セッションであってもワークスペース内の書き込みが `workspace-write` 拒否として失敗します。`workspace-write` での拒否はバックエンドの文言を含む `PatchError` として表面化します(構造化された `[sandbox: …]` マーカーと同じターン内のエスカレーションフィールドは未実装です。エスカレーションが必要な場合はネイティブの `write`/`edit` を使用してください)。
 - **追加は親ディレクトリを作成しません。** これはネイティブ `write` ツールと同じです（`ctx.fs` に mkdir はありません）。エラーには不足しているディレクトリ名が示されます。
 - ファジー/オフセットマッチングはありません。ハンクの位置は正確一致 → `trimEnd` → `trim` で、これは意図的なものです（ファジーマッチングは破壊的操作に対して安全ではありません。ロードマップに含まれています）。
 - バイナリパッチは明確なエラーで拒否されます。
@@ -110,7 +111,7 @@ dsh web --dump-config   # verify the plugin row appears
 npm install
 npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
 npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
-npm test                 # vitest, 84 tests
+npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/
 npm run verify:source    # static safety assertions (intent dance, no node:fs, …)

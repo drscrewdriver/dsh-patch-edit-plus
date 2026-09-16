@@ -11,10 +11,10 @@
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ToolResult, ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { Context } from '@deepseek-ai/cordis'
-import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
 import type { ResolvedConfig } from './config.js'
 import { PatchError, codexDisabledError, limitError, unifiedDisabledError } from './errors.js'
 import { detectFormat } from './detect.js'
+import { resolveSandboxPolicy } from './policy.js'
 import { parseCodexPatch } from './parse/codex.js'
 import { parseUnifiedDiff } from './parse/unified.js'
 import type { FileAction, ParsedPatch } from './parse/types.js'
@@ -138,10 +138,13 @@ export function buildApplyPatchTool(toolName: string, ctx: Context, cfg: Resolve
         ? (args as { dryRun: boolean }).dryRun
         : cfg.dryRunByDefault
 
-      const plan = await buildPlan(ctx, exec, parsed, cfg)
+      // Resolve the sandbox policy BEFORE planning: the plan resolves every path
+      // against the policy's workspace root, and the same policy is stamped on
+      // every mutation below, so planned paths and fenced paths share one root.
+      const sandboxPolicy = resolveSandboxPolicy(ctx, exec)
+      const plan = await buildPlan(ctx, exec, parsed, cfg, sandboxPolicy)
       const changes = await verifyPatch(ctx, exec, plan, cfg)
       if (!dryRun) {
-        const sandboxPolicy = undefined as SandboxExecutionPolicy | undefined
         await applyPatch(ctx, exec, changes, cfg, sandboxPolicy)
       }
       return buildResult(format, !dryRun, changes, cfg, Date.now() - start)

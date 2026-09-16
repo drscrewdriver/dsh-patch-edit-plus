@@ -100,6 +100,7 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 ## Limitations (disclosed)
 
 - **Delete/Move run through `ctx.shell`.** The sandbox strength is whatever the loaded shell executor enforces (`bash-sandbox` fences; `bash-local` does not) — the same risk posture as the native bash tool. Every request carries a `sandboxPolicy` and reports sandbox facts so "policy denied" is distinguishable from "command failed".
+- **Every write and every Delete/Move carries the session-scoped policy.** `apply_patch` resolves `ctx.sandboxPolicy.resolve({ session })` per call — the session's mode override plus its cwd as the workspace root — exactly like the native `write`/`edit` tools, and resolves plan paths against that same root. Without it the enforcing filesystem falls back to the deployment root, which makes in-workspace writes fail as `workspace-write` denials even in a `danger-full-access` session. A `workspace-write` denial surfaces as a `PatchError` whose message carries the backend text (the structured `[sandbox: …]` marker and the same-turn escalation fields are not implemented; use the native `write`/`edit` tools when you need to escalate).
 - **Add does not create parent directories.** This matches the native `write` tool (`ctx.fs` has no mkdir); the error names the missing directory.
 - No fuzzy/offset matching: hunk location is exact → `trimEnd` → `trim`, deliberately (fuzzy matching is unsafe for destructive ops; it is on the roadmap).
 - Binary patches are rejected with a clear error.
@@ -110,7 +111,7 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 npm install
 npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
 npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
-npm test                 # vitest, 84 tests
+npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/
 npm run verify:source    # static safety assertions (intent dance, no node:fs, …)

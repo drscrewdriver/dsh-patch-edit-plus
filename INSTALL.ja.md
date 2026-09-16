@@ -50,7 +50,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 特定のバージョンを明示的にインストールする:
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.0 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
 ```
 
 公式 CLI は profile の依存関係、ロックファイル、および `dsh.profile.bundles` を自動的に更新します。手動で YAML の行を追加しないでください。
@@ -61,7 +61,7 @@ DSH ランタイムは pnpm 11 を使用しており、その `minimumReleaseAge
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.0
+  - dsh-patch-edit-plus@0.1.1
 ```
 
 ## 2. ホストの再起動

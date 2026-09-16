@@ -99,6 +99,7 @@ dsh web --dump-config   # 确认插件行出现
 ## 限制（明确披露）
 
 - **Delete/Move 走 `ctx.shell`**：沙箱强度取决于装载的 shell 执行器（`bash-sandbox` 有围栏；`bash-local` 没有）—— 与原生 bash 工具的风险姿态一致。每次请求都携带 `sandboxPolicy` 并回传沙箱事实，"策略拒绝"与"命令失败"可区分。
+- **每次写入、每次 Delete/Move 都携带会话作用域策略**：`apply_patch` 每次调用都解析 `ctx.sandboxPolicy.resolve({ session })` —— 会话的 mode 覆盖，加上以会话 cwd 作为工作区根 —— 与官方 `write`/`edit` 完全一致，且路径规划用同一个根。缺了它，强制执行的文件系统会回退到部署级根，导致工作区内的写入以 `workspace-write` 拒绝告终，连 `danger-full-access` 会话也不例外。`workspace-write` 下的拒绝以 `PatchError` 呈现，消息里带后端原文（结构化的 `[sandbox: …]` 标记与同轮提权字段未实现；需要提权时请改用官方 `write`/`edit`）。
 - **Add 不创建父目录**：与原生 `write` 工具一致（`ctx.fs` 无 mkdir）；错误信息会指出缺失的目录。
 - 不做模糊/偏移匹配：定位容错为精确 → `trimEnd` → `trim` 三级，刻意保守（模糊匹配对删除类操作不安全，已列入路线图）。
 - 二进制补丁被拒绝并给出明确错误。
@@ -109,7 +110,7 @@ dsh web --dump-config   # 确认插件行出现
 npm install
 npm run typecheck        # 针对 0.1.2-rc.1 peer 包（devDependencies）
 npm run typecheck:0.1.5  # 针对 0.1.5-rc.2 peer 包（双版本静态核验）
-npm test                 # vitest，84 个用例
+npm test                 # vitest，90 个用例
 npm run lint
 npm run build            # lib/
 npm run verify:source    # 静态安全断言（intent 舞蹈、无 node:fs 等）

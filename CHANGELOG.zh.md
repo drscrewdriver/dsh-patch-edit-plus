@@ -1,5 +1,12 @@
 # 更新日志
 
+## [0.1.1] — 2026-09-17
+
+### 修复
+
+- **所有写入在 `workspace-write` 下被拒绝。** 工具没有传递 per-call `sandboxPolicy`，强制执行的文件系统于是回退到无作用域的 `ctx.sandboxPolicy.resolve()`——拿到的是**部署级**工作区根（服务进程的启动目录）而非会话 cwd。因此明明位于会话工作区内的路径未通过围栏检查，返回 `file access denied under workspace-write mode`；连 `danger-full-access` 会话也一样，该模式下这个 mode 甚至根本没被读取。现在改为每次调用都带上调用会话作用域解析策略（`resolve({ session })`），并同时盖在每一次写入与每一次 Delete/Move 的 shell 请求上，与官方 `write`/`edit` 完全一致。mode 的两半都生效了：会话的 `sandbox/mode` 覆盖，以及以会话 cwd 作为工作区根。
+- 路径解析与围栏现在共用同一个根：计划阶段以策略的 `workspaceRoot`（缺省回退到会话 cwd）解析每个目标，写入引擎实际写的路径就是围栏实际度量的路径。
+
 ## Unreleased
 
 ### 新增

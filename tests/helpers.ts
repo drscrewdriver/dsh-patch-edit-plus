@@ -6,6 +6,7 @@ import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
 import { resolveConfig } from '../src/config.js'
 import type { ResolvedConfig } from '../src/config.js'
 import { buildApplyPatchTool } from '../src/tool.js'
+import type { SandboxPolicyFace } from '../src/policy.js'
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
 
 export interface MemoryFile {
@@ -131,7 +132,13 @@ export interface TestRig {
   runTool(patch: string, extra?: Record<string, unknown>): Promise<unknown>
 }
 
-export function makeRig(overrides?: Partial<ResolvedConfig>, files?: Record<string, string>): TestRig {
+/**
+ * @param overrides - config overrides on top of the resolved defaults.
+ * @param files - initial files in the in-memory backend.
+ * @param policyService - a `ctx.sandboxPolicy` stand-in to mount; omitting it
+ *   models a profile whose mounted filesystem is not sandboxed.
+ */
+export function makeRig(overrides?: Partial<ResolvedConfig>, files?: Record<string, string>, policyService?: SandboxPolicyFace): TestRig {
   const fs = new MemoryFs()
   for (const [path, content] of Object.entries(files ?? {})) fs.addFile(path, content)
   const cfg: ResolvedConfig = { ...resolveConfig(undefined), ...overrides }
@@ -146,7 +153,13 @@ export function makeRig(overrides?: Partial<ResolvedConfig>, files?: Record<stri
   }
 
   const registered = new Map<string, ToolDefinition>()
-  const tool = buildApplyPatchTool(cfg.toolName, { fs, waterfall, emit } as never, cfg)
+  const tool = buildApplyPatchTool(cfg.toolName, {
+    fs,
+    waterfall,
+    emit,
+    // Mirrors cordis' optional-service accessor: an unmounted service reads as undefined.
+    get: (name: string) => (name === 'sandboxPolicy' ? policyService : undefined),
+  } as never, cfg)
 
   const exec: ToolRunContext = {
     callId: 'call-1',

@@ -8,6 +8,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
 import type { FsTarget } from '@deepseek-ai/dsh-fs'
+import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
 import type { ResolvedConfig } from '../config.js'
 import {
   duplicatePathError,
@@ -41,16 +42,20 @@ interface ResolveServices {
 
 /**
  * Plan a parsed patch against the filesystem backend.
+ * @param sandboxPolicy - the per-call policy the mutations will carry; its
+ *   workspace root, when set, is the resolution cwd AND the containment root, so
+ *   the path the engine writes is exactly the path the fence will measure.
  * @throws {@link PatchError} on limits, path escapes, symlinks, missing parents or duplicate targets.
  */
-export async function buildPlan(ctx: Context, exec: ToolRunContext, parsed: ParsedPatch, cfg: ResolvedConfig): Promise<PlannedPatch> {
+export async function buildPlan(ctx: Context, exec: ToolRunContext, parsed: ParsedPatch, cfg: ResolvedConfig, sandboxPolicy?: SandboxExecutionPolicy): Promise<PlannedPatch> {
   if (parsed.ops.length > cfg.maxFiles) throw limitError('file section count', parsed.ops.length, cfg.maxFiles)
 
   const fs = ctx.fs as unknown as ResolveServices
-  const cwd = exec.agent?.session.header.cwd
+  const cwd = sandboxPolicy?.workspaceRoot ?? exec.agent?.session.header.cwd
   const resolveOpts = { cwd, signal: exec.signal }
 
-  // Containment root: the session workspace, when the call carries one.
+  // Containment root: the fencing root when the call carries a policy, else the
+  // session workspace. Mirrors the native write/edit tools' resolve options.
   const rootTarget = cwd === undefined ? undefined : await fs.resolve(cwd, resolveOpts)
 
   const seen = new Map<string, string>()

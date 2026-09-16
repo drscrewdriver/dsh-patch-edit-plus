@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1] — 2026-09-17
+
+### Fixed
+
+- **Every write was denied under `workspace-write`.** The tool passed no per-call `sandboxPolicy`, so the enforcing filesystem fell back to `ctx.sandboxPolicy.resolve()` with no scope — the DEPLOYMENT workspace root (the server's launch directory) instead of the session cwd. A path plainly inside the session workspace therefore failed containment and returned `file access denied under workspace-write mode`, even in a `danger-full-access` session, where the mode was not even read. The policy is now resolved per call with the calling session in scope (`resolve({ session })`) and stamped on every write and every Delete/Move shell request, exactly as the native `write`/`edit` tools do. Both halves of the mode are honored now: the session's `sandbox/mode` override and its cwd as the workspace root.
+- Path resolution and the fence now share one root: the plan resolves every target against the policy's `workspaceRoot` (falling back to the session cwd), so the path the engine writes is the path the fence measures.
+
 ## Unreleased
 
 ### Added

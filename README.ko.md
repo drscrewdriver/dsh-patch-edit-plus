@@ -100,6 +100,7 @@ dsh web --dump-config   # verify the plugin row appears
 ## 한계 (공개)
 
 - **삭제/이동은 `ctx.shell`을 통해 실행됩니다.** 샌드박스 강도는 로드된 셸 실행기가 실제로 강제하는 수준을 따릅니다(`bash-sandbox`는 격리하고, `bash-local`은 격리하지 않습니다) — 네이티브 bash 도구와 동일한 위험 구도입니다. 모든 요청은 `sandboxPolicy`를 함께 전달하고 샌드박스 관련 사실을 보고하므로, "정책 거부"와 "명령 실패"를 구별할 수 있습니다.
+- **모든 쓰기와 모든 삭제/이동이 세션 범위 정책을 함께 전달합니다.** `apply_patch`는 호출마다 `ctx.sandboxPolicy.resolve({ session })`을 해석하며(세션의 모드 재정의와 워크스페이스 루트로서의 세션 cwd), 네이티브 `write`/`edit` 도구와 완전히 동일하게 동작하고 경로 계획도 같은 루트를 사용합니다. 이것이 없으면 강제 적용하는 파일 시스템이 배포 루트로 폴백하여, `danger-full-access` 세션에서도 워크스페이스 내부 쓰기가 `workspace-write` 거부로 실패합니다. `workspace-write` 거부는 백엔드 문구를 담은 `PatchError`로 표면화됩니다(구조화된 `[sandbox: …]` 마커와 같은 턴의 에스컬레이션 필드는 구현되지 않았습니다. 에스컬레이션이 필요하면 네이티브 `write`/`edit`를 사용하십시오).
 - **추가(Add)는 상위 디렉터리를 생성하지 않습니다.** 이는 네이티브 `write` 도구와 동일한 동작이며(`ctx.fs`에는 mkdir이 없습니다), 오류 메시지에 누락된 디렉터리 이름이 표시됩니다.
 - 퍼지/오프셋 매칭은 지원하지 않습니다. hunk 위치 탐색은 정확 일치 → `trimEnd` → `trim` 순으로 의도적으로 수행합니다(퍼지 매칭은 파괴적 연산에 안전하지 않으며, 로드맵에 올라 있습니다).
 - 바이너리 패치는 명확한 오류와 함께 거부됩니다.
@@ -110,7 +111,7 @@ dsh web --dump-config   # verify the plugin row appears
 npm install
 npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
 npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
-npm test                 # vitest, 84 tests
+npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/
 npm run verify:source    # static safety assertions (intent dance, no node:fs, …)
