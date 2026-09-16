@@ -1,6 +1,4 @@
 node_modules/
-lib/
-dist/
 .compat-0.1.5/
 *.log
 *.tsbuildinfo
