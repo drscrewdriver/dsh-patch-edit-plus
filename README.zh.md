@@ -86,7 +86,7 @@ dsh web --dump-config   # 确认插件行出现
 | `conflictPolicy` | `rename` | 重名时 `rename` / `skip` / `fail`。 |
 | `renameSuffix` | `_1` | 改名避让使用的后缀。 |
 | `allowUnifiedDiff` | `true` | 接受 git/unified diff。 |
-| `allowCodexPatch` | `false` | 接受 Codex `apply_patch` 语法。 |
+| `allowCodexPatch` | `false` | 接受 Codex `apply_patch` 语法。也可在 DSH 设置面板中修改，改动立即生效、无需重启。 |
 | `deleteBackend` | `shell` | `shell` 或 `none`（Delete/Move 返回结构化错误）。 |
 | `shellDialect` | `auto` | `auto`（win32 上 pwsh）/ `posix` / `pwsh`。 |
 | `deleteCommand` / `moveCommand` | 内置 | 自定义命令模板。路径仍然**只经 env** 传入（`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`），请勿把路径插值进命令串。 |

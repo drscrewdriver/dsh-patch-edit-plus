@@ -87,7 +87,7 @@ dsh web --dump-config   # verify the plugin row appears
 | `conflictPolicy` | `rename` | ツール名が使用済みの場合の `rename` / `skip` / `fail`。 |
 | `renameSuffix` | `_1` | リネーム回避で使用される接尾辞。 |
 | `allowUnifiedDiff` | `true` | git/unified diff を受け付けます。 |
-| `allowCodexPatch` | `false` | Codex `apply_patch` 構文を受け付けます。 |
+| `allowCodexPatch` | `false` | Codex `apply_patch` 構文を受け付けます。DSH 設定パネルからも変更でき、変更は即座に反映されます(再起動不要)。 |
 | `deleteBackend` | `shell` | `shell` または `none`（削除/移動は構造化エラーを返します）。 |
 | `shellDialect` | `auto` | `auto`（win32 では pwsh）/ `posix` / `pwsh`。 |
 | `deleteCommand` / `moveCommand` | 組み込み | カスタムコマンドテンプレート。パスは依然として **env 経由のみ**（`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`）で渡され、コマンド文字列に補間されることはありません。 |

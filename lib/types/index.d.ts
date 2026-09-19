@@ -32,8 +32,13 @@ export declare const name = "dsh-patch-edit-plus";
  * in every profile that has no shell capability.
  */
 export declare const inject: string[];
-/** Settings namespace (a plain string literal: valid on every target version). */
-export declare const SETTINGS_NAMESPACE = "patch_edit_plus";
+/**
+ * Settings namespace. Must match dsh-settings `NAMESPACE_PATTERN`
+ * (`/^[a-z][a-z0-9-]*$/`) on every target version: letters, digits and
+ * hyphens only — an underscore made `register()` throw before anything
+ * persisted, so no migration is needed.
+ */
+export declare const SETTINGS_NAMESPACE = "patch-edit-plus";
 export { Config };
 /** Register the tool and the settings namespace. Every registration is scoped to this plugin. */
 export declare function apply(ctx: Context, config?: PluginConfig): void;

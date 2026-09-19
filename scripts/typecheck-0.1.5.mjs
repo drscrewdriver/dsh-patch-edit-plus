@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Static cross-version verification: typecheck the plugin's src against the
- * 0.1.5-rc.2 peer packages (the local machine runs 0.1.2-rc.1, whose packages
- * are the regular devDependencies). Installs the 0.1.5 peer set into
+ * 0.1.5-rc.2 peer packages (the local machine runs 0.1.5-rc.2, while the
+ * regular devDependencies pin the 0.1.2-rc.1 type baseline). Installs the 0.1.5 peer set into
  * `.compat-0.1.5/` and runs tsc with `paths` redirected there.
  */
 import { execSync } from 'node:child_process'

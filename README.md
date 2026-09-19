@@ -87,7 +87,7 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 | `conflictPolicy` | `rename` | `rename` / `skip` / `fail` when the tool name is taken. |
 | `renameSuffix` | `_1` | Suffix used by rename avoidance. |
 | `allowUnifiedDiff` | `true` | Accept git/unified diffs. |
-| `allowCodexPatch` | `false` | Accept Codex `apply_patch` syntax. |
+| `allowCodexPatch` | `false` | Accept Codex `apply_patch` syntax. Also editable in the DSH settings panel; changes take effect immediately, no restart needed. |
 | `deleteBackend` | `shell` | `shell` or `none` (Delete/Move return a structured error). |
 | `shellDialect` | `auto` | `auto` (pwsh on win32) / `posix` / `pwsh`. |
 | `deleteCommand` / `moveCommand` | built-in | Custom command templates. Paths still arrive **only via env** (`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`); never interpolate them into the command string. |

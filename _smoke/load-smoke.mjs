@@ -97,7 +97,19 @@ const declaredServices = new Set(inject)
 const rawCtx = {
   logger: { info: () => {}, warn: () => {}, error: () => {} },
   effect: (fn) => { const d = fn(); if (typeof d === 'function') disposers.push(d); return d },
-  inject: (deps, cb) => cb({ settings: { installSection: () => {} } }),
+  // The settings stub mirrors the real installSection contract: capture the
+  // hooks and drive setSource/onChange once at attach, so the load path
+  // proves the plugin consumes the resolved source (a no-op stub is exactly
+  // how the wiring defect stayed invisible).
+  inject: (deps, cb) => cb({
+    settings: {
+      installSection: (_owner, _ns, _schema, _entry, hooks) => {
+        hooks.setSource(() => _entry)
+        hooks.onChange()
+        return { owner: _owner, ns: _ns }
+      },
+    },
+  }),
   get: () => undefined,
   waterfall: async (event, target, exec, next) => { waterfallCalls.push(event); return next() },
   emit: (event, ...args) => emitCalls.push([event, ...args]),

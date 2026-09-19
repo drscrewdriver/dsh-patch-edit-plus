@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2] — 2026-09-19
+
+### Fixed
+
+- **The settings section never registered.** The settings namespace `patch_edit_plus` contains an underscore, which `dsh-settings`' namespace pattern (`^[a-z][a-z0-9-]*$`) rejects, so `register()` threw before anything persisted — no settings entry appeared in the panel or in `~/.dsh/settings.yaml`. Renamed to `patch-edit-plus` (no migration needed: the old section could never exist).
+- **Config changes from the settings layer never reached the tool.** The `setSource`/`onChange` hooks were no-ops and the resolved config was memoized once at load. The plugin now consumes the resolved source: every committed settings change (or legacy `register` watch) re-resolves the config and re-registers the tool — disposing the old registration first, since re-registering over a live name silently renames it. `allowCodexPatch` and every other field can now be toggled from the DSH settings panel and take effect immediately, with the tool description (the list of accepted patch styles) staying in sync; no process restart required. Detaching the settings service falls back to the composition entry, and re-judging is idempotent (the whole resolved config is compared, not just one field).
+
 ## [0.1.1] — 2026-09-17
 
 ### Fixed

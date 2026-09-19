@@ -37,34 +37,86 @@ export const name = 'dsh-patch-edit-plus'
  */
 export const inject = ['tools', 'fs']
 
-/** Settings namespace (a plain string literal: valid on every target version). */
-export const SETTINGS_NAMESPACE = 'patch_edit_plus'
+/**
+ * Settings namespace. Must match dsh-settings `NAMESPACE_PATTERN`
+ * (`/^[a-z][a-z0-9-]*$/`) on every target version: letters, digits and
+ * hyphens only — an underscore made `register()` throw before anything
+ * persisted, so no migration is needed.
+ */
+export const SETTINGS_NAMESPACE = 'patch-edit-plus'
 
 export { Config }
 
+/** Owner-facing handle returned by the legacy `register` API. */
+interface SettingsScopeFace {
+  get(): PluginConfig
+  watch(callback: () => void): () => void
+}
+
 /** Settings service face covering both the 0.1.2+ and legacy registration APIs. */
 interface SettingsFace {
-  installSection?(owner: unknown, namespace: string, schema: unknown, entry: unknown, hooks: unknown): unknown
-  register?(namespace: string, schema: unknown, options: { base?: unknown }): unknown
+  installSection?(
+    owner: unknown,
+    namespace: string,
+    schema: unknown,
+    entry: unknown,
+    hooks: { setSource(current: () => PluginConfig): void; onChange(): void },
+  ): unknown
+  register?(
+    namespace: string,
+    schema: unknown,
+    options: { base?: unknown },
+  ): SettingsScopeFace | undefined
 }
 
 /** Register the tool and the settings namespace. Every registration is scoped to this plugin. */
 export function apply(ctx: Context, config?: PluginConfig): void {
-  const cfg = resolveConfig(config)
+  const compositionEntry = config ?? {}
+
+  // 权威来源：设置层挂载时是解析后的 scope，否则是组合条目。
+  // installSection 保证在每次匹配的 onChange 之前先调用 setSource（attach 与 detach 各一次）。
+  let readSource: () => PluginConfig = () => compositionEntry
+
+  let disposer: (() => void) | null = null
+  // 登记级 key。工具「描述」把可用语法固化进去了（tool.ts 拼 `Accepts ${styles}`），
+  // 所以判定必须覆盖整份 resolved config，而不是只看 allowCodexPatch。
+  let registeredKey: string | null = null
+
+  const rejudge = (): void => {
+    const next = resolveConfig(readSource())
+    const key = JSON.stringify(next)
+    if (key === registeredKey) return
+    disposer?.()
+    disposer = registerApplyPatchTool(ctx, next) ?? null
+    registeredKey = key
+  }
 
   ctx.effect(() => {
-    const disposer = registerApplyPatchTool(ctx, cfg)
-    return disposer ?? (() => {})
+    rejudge()
+    return () => {
+      disposer?.()
+      disposer = null
+      registeredKey = null
+    }
   })
 
   ctx.inject(['settings'], (settingsCtx) => {
     const settings = (settingsCtx as unknown as { settings?: SettingsFace }).settings
       ?? (settingsCtx as unknown as SettingsFace)
-    const base = config ?? {}
     if (typeof settings?.installSection === 'function') {
-      settings.installSection(ctx, SETTINGS_NAMESPACE, Config, base, { setSource: () => {}, onChange: () => {} })
-    } else if (typeof settings?.register === 'function') {
-      settings.register(SETTINGS_NAMESPACE, Config, { base })
+      settings.installSection(ctx, SETTINGS_NAMESPACE, Config, compositionEntry, {
+        setSource: (current) => { readSource = current },
+        onChange: () => { rejudge() },
+      })
+      return
+    }
+    if (typeof settings?.register === 'function') {
+      const scope = settings.register(SETTINGS_NAMESPACE, Config, { base: compositionEntry })
+      if (scope !== undefined) {
+        readSource = () => scope.get()
+        scope.watch(() => { rejudge() })
+        rejudge()
+      }
     }
   })
 }

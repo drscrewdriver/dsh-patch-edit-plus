@@ -87,7 +87,7 @@ dsh web --dump-config   # verify the plugin row appears
 | `conflictPolicy` | `rename` | 도구 이름이 이미 사용 중일 때의 동작으로, `rename` / `skip` / `fail` 중 하나입니다. |
 | `renameSuffix` | `_1` | 이름 회피에 사용되는 접미사입니다. |
 | `allowUnifiedDiff` | `true` | git/unified diff를 허용합니다. |
-| `allowCodexPatch` | `false` | Codex `apply_patch` 문법을 허용합니다. |
+| `allowCodexPatch` | `false` | Codex `apply_patch` 문법을 허용합니다. DSH 설정 패널에서도 변경할 수 있으며, 변경은 즉시 적용됩니다(재시작 불필요). |
 | `deleteBackend` | `shell` | `shell` 또는 `none`(`none`이면 삭제/이동이 구조화된 오류를 반환합니다). |
 | `shellDialect` | `auto` | `auto`(win32에서는 pwsh) / `posix` / `pwsh` 중 하나입니다. |
 | `deleteCommand` / `moveCommand` | 내장 | 사용자 지정 명령 템플릿입니다. 경로는 여전히 **환경 변수로만**(`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`) 전달되며, 명령 문자열에 끼워 넣어서는 안 됩니다. |
