@@ -6,6 +6,7 @@
  * @module dsh-patch-edit-plus/config
  */
 import z from '@deepseek-ai/schemastery';
+import type { Volatile } from '@deepseek-ai/cosmokit';
 /** What to do when the configured tool name is already taken at registration. */
 export type ConflictPolicy = 'rename' | 'skip' | 'fail';
 /** Backend used for Delete/Move operations (`ctx.fs` has no delete/move). */
@@ -22,8 +23,10 @@ export interface Config {
     renameSuffix?: string;
     /** Accept git/unified diff patches. Defaults to true. */
     allowUnifiedDiff?: boolean;
-    /** Accept Codex `apply_patch` syntax. Defaults to false. */
-    allowCodexPatch?: boolean;
+    /** Accept Codex `apply_patch` syntax. Defaults to false.
+     * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
+     * field — always read it through `readVolatileBoolean`, never cache the ref. */
+    allowCodexPatch?: boolean | Volatile<boolean>;
     /** Delete/Move backend. Defaults to `shell`. `none` rejects Delete/Move with a structured error. */
     deleteBackend?: DeleteBackend;
     /** Shell dialect for the constant delete/move templates. Defaults to `auto` (pwsh on win32). */
@@ -44,7 +47,37 @@ export interface Config {
     maxDiffBytes?: number;
 }
 /** Schemastery schema for Loader defaults and generated configuration docs. */
-export declare const Config: z<Config>;
+export declare const Config: z<Schemastery.ObjectS<NoInfer<{
+    toolName: z<string, string, "defined">;
+    conflictPolicy: z<"rename" | "skip" | "fail", "rename" | "skip" | "fail", "defined">;
+    renameSuffix: z<string, string, "defined">;
+    allowUnifiedDiff: z<boolean, boolean, "defined">;
+    allowCodexPatch: z<boolean, boolean, "volatile-defined">;
+    deleteBackend: z<"shell" | "none", "shell" | "none", "defined">;
+    shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
+    deleteCommand: z<string, string, "plain">;
+    moveCommand: z<string, string, "plain">;
+    dryRunByDefault: z<boolean, boolean, "defined">;
+    followSymlinks: z<boolean, boolean, "defined">;
+    maxFiles: z<number, number, "defined">;
+    maxPatchBytes: z<number, number, "defined">;
+    maxDiffBytes: z<number, number, "defined">;
+}>>, Schemastery.ObjectT<NoInfer<{
+    toolName: z<string, string, "defined">;
+    conflictPolicy: z<"rename" | "skip" | "fail", "rename" | "skip" | "fail", "defined">;
+    renameSuffix: z<string, string, "defined">;
+    allowUnifiedDiff: z<boolean, boolean, "defined">;
+    allowCodexPatch: z<boolean, boolean, "volatile-defined">;
+    deleteBackend: z<"shell" | "none", "shell" | "none", "defined">;
+    shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
+    deleteCommand: z<string, string, "plain">;
+    moveCommand: z<string, string, "plain">;
+    dryRunByDefault: z<boolean, boolean, "defined">;
+    followSymlinks: z<boolean, boolean, "defined">;
+    maxFiles: z<number, number, "defined">;
+    maxPatchBytes: z<number, number, "defined">;
+    maxDiffBytes: z<number, number, "defined">;
+}>>, "plain">;
 /** Fully-resolved configuration used by the tool body. */
 export interface ResolvedConfig {
     toolName: string;
@@ -62,5 +95,7 @@ export interface ResolvedConfig {
     maxPatchBytes: number;
     maxDiffBytes: number;
 }
+/** Read a `.volatile()` field: a live ref on 0.1.7+, a plain boolean otherwise. */
+export declare function readVolatileBoolean(value: boolean | Volatile<boolean> | undefined, fallback: boolean): boolean;
 /** Fill user config with defaults; `undefined`/null entries fall back too. */
 export declare function resolveConfig(config: Config | undefined): ResolvedConfig;

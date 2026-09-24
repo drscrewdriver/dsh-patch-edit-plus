@@ -3,13 +3,14 @@ import { apply } from '../src/index.js'
 import { makeRig } from './helpers.js'
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
 
-type SectionHooks = { setSource(current: () => unknown): void; onChange(): void }
+/** Minimal live-ref shape the 0.1.7 loader hands `apply` for `.volatile()` fields. */
+type VolatileRef<T> = { get(): T }
 
 /** A cordis-shaped stub host context exercising the plugin's lifecycle. */
-function makeHostCtx(options: { takenNames?: string[]; missingShell?: boolean } = {}) {
+function makeHostCtx(options: { takenNames?: string[] } = {}) {
   const registered = new Map<string, ToolDefinition>()
   const disposers: (() => void)[] = []
-  const injected: string[][] = []
+  const listeners = new Map<string, ((paths: string[]) => void)[]>()
   let registerCount = 0
   const tools = {
     get(name: string) { return registered.get(name) },
@@ -21,21 +22,11 @@ function makeHostCtx(options: { takenNames?: string[]; missingShell?: boolean } 
     },
     schemas() { return [...registered.keys()] },
   }
-  // Mirrors the real installSection: capture the hooks, drive setSource then
-  // onChange at attach, and keep the section handle. A stub that ignored the
-  // hooks is exactly how the wiring defect stayed invisible to the suite.
-  let hooks: SectionHooks | undefined
-  const compositionEntry: Record<string, unknown> = {}
-  let currentSource: () => unknown = () => compositionEntry
-  const settingsFace = {
-    installSection: (owner: unknown, ns: string, schema: unknown, entry: unknown, h: SectionHooks) => {
-      hooks = h
-      currentSource = () => entry
-      hooks.setSource(currentSource)
-      hooks.onChange()
-      return { owner, ns, schema }
-    },
-    register: () => { throw new Error('should not fall back when installSection exists') },
+  // Composition entry as the 0.1.7 loader presents it: `.volatile()` fields are
+  // live refs; rejudge must re-resolve the whole entry on every update.
+  let allowCodexValue = false
+  const compositionEntry: Record<string, unknown> = {
+    allowCodexPatch: { get: () => allowCodexValue } as VolatileRef<boolean>,
   }
   const ctx = {
     tools,
@@ -46,65 +37,60 @@ function makeHostCtx(options: { takenNames?: string[]; missingShell?: boolean } 
       if (typeof d === 'function') disposers.push(d as () => void)
       return d
     },
-    inject(deps: string[], cb: (scoped: unknown) => void) {
-      injected.push(deps)
-      cb({ settings: settingsFace, effect: (fn: () => unknown) => ctx.effect(fn) })
+    on(event: string, fn: (paths: string[]) => void) {
+      const list = listeners.get(event) ?? []
+      list.push(fn)
+      listeners.set(event, list)
     },
     get() { return undefined },
   }
   for (const name of options.takenNames ?? []) registered.set(name, { name } as unknown as ToolDefinition)
   return {
     ctx,
+    entry: compositionEntry,
     registered,
     disposers,
-    injected,
     registerCount: () => registerCount,
-    /** Simulate a committed settings change: the resolved source switches. */
-    commitSettings(source: Record<string, unknown>): void {
-      if (hooks === undefined) throw new Error('settings section not installed')
-      currentSource = () => source
-      hooks.setSource(currentSource)
-      hooks.onChange()
+    /** Simulate a committed volatile-field change: flip the live ref, emit once. */
+    commitVolatile(value: boolean): void {
+      allowCodexValue = value
+      for (const fn of listeners.get('loader/volatile-update') ?? []) fn(['allowCodexPatch'])
     },
-    /** Simulate the settings service detaching: the source falls back to the composition entry. */
-    detachSettings(): void {
-      if (hooks === undefined) throw new Error('settings section not installed')
-      currentSource = () => compositionEntry
-      hooks.setSource(currentSource)
-      hooks.onChange()
+    /** Simulate a volatile update whose resolved values are unchanged (no-op). */
+    emitUnchanged(): void {
+      for (const fn of listeners.get('loader/volatile-update') ?? []) fn(['allowCodexPatch'])
     },
     disposAll: () => { for (const d of disposers.splice(0)) d() },
   }
 }
 
 describe('plugin lifecycle', () => {
-  it('apply registers exactly one tool and the settings section', () => {
+  it('apply registers exactly one tool with no settings registration', () => {
     const host = makeHostCtx()
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     expect(host.registered.size).toBe(1)
     expect(host.registered.has('apply_patch')).toBe(true)
-    expect(host.injected).toEqual([['settings']])
   })
 
   it('dispose removes the tool; a reload can register it again', () => {
     const host = makeHostCtx()
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     expect(host.registered.has('apply_patch')).toBe(true)
     host.disposAll()
     expect(host.registered.has('apply_patch')).toBe(false)
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     expect(host.registered.has('apply_patch')).toBe(true)
   })
 
   it('a taken tool name does not break loading (rename avoidance)', () => {
     const host = makeHostCtx({ takenNames: ['apply_patch'] })
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     expect(host.registered.has('apply_patch_1')).toBe(true)
   })
 
   it('native tool names are untouched — pure addition', () => {
     const host = makeHostCtx({ takenNames: ['read', 'write', 'edit', 'glob', 'grep'] })
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     for (const native of ['read', 'write', 'edit', 'glob', 'grep']) {
       expect(host.registered.has(native)).toBe(true)
       expect(host.registered.get(native)?.name).toBe(native)
@@ -115,13 +101,13 @@ describe('plugin lifecycle', () => {
 
   it('the frozen definition survives registration', () => {
     const host = makeHostCtx()
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     expect(Object.isFrozen(host.registered.get('apply_patch'))).toBe(true)
   })
 
   it('the tool definition declares the spec parameters and seven-field output', () => {
     const host = makeHostCtx()
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     const def = host.registered.get('apply_patch') as unknown as {
       parameters: { properties: Record<string, { type: string }>; required: string[] }
       output: { schema: { properties: Record<string, unknown>; required?: string[] } }
@@ -132,42 +118,25 @@ describe('plugin lifecycle', () => {
     expect(def.output.schema.required).toEqual(expect.arrayContaining(['format', 'applied', 'summary', 'files', 'stats', 'wallTimeMs', 'diffs']))
   })
 
-  it('a committed settings change re-registers the same tool name with an updated description', () => {
+  it('a committed volatile change re-registers the same tool name with an updated description', () => {
     const host = makeHostCtx()
-    apply(host.ctx as never, {})
+    apply(host.ctx as never, host.entry)
     expect(host.registered.get('apply_patch')?.description).not.toContain('Codex apply_patch syntax')
-    host.commitSettings({ allowCodexPatch: true })
+    host.commitVolatile(true)
     expect([...host.registered.keys()]).toEqual(['apply_patch'])
     expect(host.registered.has('apply_patch_1')).toBe(false)
     expect(host.registered.get('apply_patch')?.description).toContain('Codex apply_patch syntax')
-  })
-
-  it('repeated onChange with the same resolved value registers only once (idempotent)', () => {
-    const host = makeHostCtx()
-    apply(host.ctx as never, {})
-    const afterLoad = host.registerCount()
-    const source = { allowCodexPatch: true }
-    host.commitSettings(source)
-    host.commitSettings(source)
-    expect(host.registerCount()).toBe(afterLoad + 1)
-  })
-
-  it('detaching the settings service falls back to the composition entry', () => {
-    const host = makeHostCtx()
-    apply(host.ctx as never, {})
-    host.commitSettings({ allowCodexPatch: true })
-    expect(host.registered.get('apply_patch')?.description).toContain('Codex apply_patch syntax')
-    host.detachSettings()
-    expect([...host.registered.keys()]).toEqual(['apply_patch'])
+    host.commitVolatile(false)
     expect(host.registered.get('apply_patch')?.description).not.toContain('Codex apply_patch syntax')
   })
 
-  it('a change to a non-description field still re-registers (key covers the whole config)', () => {
+  it('repeated volatile updates with the same resolved value register only once (idempotent)', () => {
     const host = makeHostCtx()
-    apply(host.ctx as never, { maxFiles: 4 })
-    const before = host.registerCount()
-    host.commitSettings({ maxFiles: 9 })
-    expect(host.registerCount()).toBe(before + 1)
-    expect([...host.registered.keys()]).toEqual(['apply_patch'])
+    apply(host.ctx as never, host.entry)
+    const afterLoad = host.registerCount()
+    host.commitVolatile(true)
+    host.emitUnchanged()
+    host.emitUnchanged()
+    expect(host.registerCount()).toBe(afterLoad + 1)
   })
 })

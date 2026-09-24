@@ -4,16 +4,21 @@
  * One `apply_patch` tool accepting git/unified diff (default) and Codex
  * `apply_patch` syntax (opt-in). All-or-nothing application through the
  * official fs write-intent dance; delete/move through the sandbox-aware
- * shell. Compatible with DSH 0.1.2-rc.1 through 0.1.5-rc.2: the tool
- * authoring contract is byte-identical across those versions, so a single
- * code path serves both; only settings registration needs the dual-API
- * fallback (`installSection` first, `register` second).
+ * shell. Targets DSH 0.1.7+: settings are declarative — the fields marked
+ * `.volatile()` in `Config` render the settings form automatically (no
+ * registration call), and `loader/volatile-update` drives re-registration
+ * without a plugin remount. This line drops the pre-0.1.7 hosts; the
+ * 0.1.2-rc.1 ~ 0.1.5-rc.2 line stays on its maintenance branch.
  *
  * @module dsh-patch-edit-plus
  */
 import type { Context } from '@deepseek-ai/cordis';
-import { Config } from './config.js';
 import type { Config as PluginConfig } from './config.js';
+declare module '@deepseek-ai/cordis' {
+    interface Events {
+        'loader/volatile-update': (paths: string[]) => void;
+    }
+}
 /** Cordis plugin name used by Loader diagnostics. */
 export declare const name = "dsh-patch-edit-plus";
 /**
@@ -32,13 +37,11 @@ export declare const name = "dsh-patch-edit-plus";
  * in every profile that has no shell capability.
  */
 export declare const inject: string[];
+export { Config } from './config.js';
 /**
- * Settings namespace. Must match dsh-settings `NAMESPACE_PATTERN`
- * (`/^[a-z][a-z0-9-]*$/`) on every target version: letters, digits and
- * hyphens only — an underscore made `register()` throw before anything
- * persisted, so no migration is needed.
+ * Register the tool from the current config snapshot.
+ *
+ * 登记级 key。工具「描述」把可用语法固化进去了（tool.ts 拼 `Accepts ${styles}`），
+ * 所以判定必须覆盖整份 resolved config，而不是只看 allowCodexPatch。
  */
-export declare const SETTINGS_NAMESPACE = "patch-edit-plus";
-export { Config };
-/** Register the tool and the settings namespace. Every registration is scoped to this plugin. */
 export declare function apply(ctx: Context, config?: PluginConfig): void;

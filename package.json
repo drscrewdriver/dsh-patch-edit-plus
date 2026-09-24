@@ -1,7 +1,7 @@
 {
   "name": "dsh-patch-edit-plus",
-  "version": "0.1.2",
-  "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, and 0.1.2-rc.1 ~ 0.1.5-rc.2 compatibility.",
+  "version": "0.2.0",
+  "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, with a DSH 0.1.7+ line (declarative volatile settings).",
   "type": "module",
   "repository": {
     "type": "git",
@@ -47,7 +47,7 @@
   },
   "engines": {
     "node": ">=20",
-    "dsh": ">=0.1.2-rc.1 <0.2.0-0"
+    "dsh": ">=0.1.7-rc.1 <0.2.0-0"
   },
   "license": "MIT",
   "keywords": [
@@ -62,10 +62,10 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-fs": ">=0.1.2-rc.1",
-    "@deepseek-ai/dsh-sandbox": ">=0.1.2-rc.1",
-    "@deepseek-ai/dsh-shell": ">=0.1.2-rc.1",
-    "@deepseek-ai/dsh-tools": ">=0.1.2-rc.1"
+    "@deepseek-ai/dsh-fs": ">=0.1.7-rc.1 <0.2.0-0",
+    "@deepseek-ai/dsh-sandbox": ">=0.1.7-rc.1 <0.2.0-0",
+    "@deepseek-ai/dsh-shell": ">=0.1.7-rc.1 <0.2.0-0",
+    "@deepseek-ai/dsh-tools": ">=0.1.7-rc.1 <0.2.0-0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -85,7 +85,7 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "^3.18.2"
+    "@deepseek-ai/schemastery": "^3.18.4"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
@@ -98,6 +98,10 @@
     "eslint": "^9.0.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "@deepseek-ai/schemastery": "^3.18.4"
+  },
+  "publishConfig": {
+    "tag": "dsh-0.1.7"
   }
 }

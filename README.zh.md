@@ -6,11 +6,10 @@
 
 | DSH 版本 | 状态 | 说明 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ 支持 | 工具编写契约（`defineTool` DSL、presentation 视图）在 0.1.2–0.1.5 间逐字节未变，单一代码路径服务两个版本。 |
-| `0.1.3-alpha.x` | ✅ 支持 | 同上。 |
-| `0.1.5-rc.2` | ✅ 静态核验 | `npm run typecheck:0.1.5` 用真实 `0.1.5-rc.2` peer 包对 `src/` 做类型核验；不调用 `readByteRange`，不含 0.1.5-only PTC 字符串。 |
+| `0.1.7-rc.1+` | ✅ 支持（本线，v0.2.0+） | 声明式设置：`allowCodexPatch` 标记 `.volatile()`——设置表单自动生成，`loader/volatile-update` 驱动工具原位重注册（不 remount），无任何注册调用。 |
+| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ 维护线 | 由 0.1.7 前的分支 / `dsh-0.1.5` dist-tag 服务。0.1.7 删除了双 API 回退所依赖的命令式注册 API，一份代码无法同时兼容两代。 |
 
-settings 注册走双 API 回退：0.1.2+ 的 `settings.installSection` 优先，旧版回退 `settings.register`。
+本线的 settings 是声明式的：`Config` 中标记 `.volatile()` 的字段即设置表单；插件订阅 `loader/volatile-update`，不再接收注册 hooks。
 
 ## 工具路由指引（为什么该用谁）
 

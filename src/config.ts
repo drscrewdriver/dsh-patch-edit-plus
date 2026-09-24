@@ -7,6 +7,7 @@
  */
 
 import z from '@deepseek-ai/schemastery'
+import type { Volatile } from '@deepseek-ai/cosmokit'
 
 /** What to do when the configured tool name is already taken at registration. */
 export type ConflictPolicy = 'rename' | 'skip' | 'fail'
@@ -27,8 +28,10 @@ export interface Config {
   renameSuffix?: string
   /** Accept git/unified diff patches. Defaults to true. */
   allowUnifiedDiff?: boolean
-  /** Accept Codex `apply_patch` syntax. Defaults to false. */
-  allowCodexPatch?: boolean
+  /** Accept Codex `apply_patch` syntax. Defaults to false.
+   * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
+   * field — always read it through `readVolatileBoolean`, never cache the ref. */
+  allowCodexPatch?: boolean | Volatile<boolean>
   /** Delete/Move backend. Defaults to `shell`. `none` rejects Delete/Move with a structured error. */
   deleteBackend?: DeleteBackend
   /** Shell dialect for the constant delete/move templates. Defaults to `auto` (pwsh on win32). */
@@ -50,12 +53,12 @@ export interface Config {
 }
 
 /** Schemastery schema for Loader defaults and generated configuration docs. */
-export const Config: z<Config> = z.object({
+export const Config = z.object({
   toolName: z.string().default('apply_patch'),
   conflictPolicy: z.union(['rename', 'skip', 'fail'] as const).default('rename'),
   renameSuffix: z.string().default('_1'),
   allowUnifiedDiff: z.boolean().default(true),
-  allowCodexPatch: z.boolean().default(false),
+  allowCodexPatch: z.boolean().default(false).volatile(),
   deleteBackend: z.union(['shell', 'none'] as const).default('shell'),
   shellDialect: z.union(['auto', 'posix', 'pwsh'] as const).default('auto'),
   deleteCommand: z.string(),
@@ -85,6 +88,16 @@ export interface ResolvedConfig {
   maxDiffBytes: number
 }
 
+/** Read a `.volatile()` field: a live ref on 0.1.7+, a plain boolean otherwise. */
+export function readVolatileBoolean(
+  value: boolean | Volatile<boolean> | undefined,
+  fallback: boolean,
+): boolean {
+  if (typeof value === 'boolean') return value
+  if (value && typeof value.get === 'function') return Boolean(value.get())
+  return fallback
+}
+
 /** Fill user config with defaults; `undefined`/null entries fall back too. */
 export function resolveConfig(config: Config | undefined): ResolvedConfig {
   const c = config ?? {}
@@ -93,7 +106,7 @@ export function resolveConfig(config: Config | undefined): ResolvedConfig {
     conflictPolicy: c.conflictPolicy ?? 'rename',
     renameSuffix: typeof c.renameSuffix === 'string' ? c.renameSuffix : '_1',
     allowUnifiedDiff: c.allowUnifiedDiff ?? true,
-    allowCodexPatch: c.allowCodexPatch ?? false,
+    allowCodexPatch: readVolatileBoolean(c.allowCodexPatch, false),
     deleteBackend: c.deleteBackend ?? 'shell',
     shellDialect: c.shellDialect ?? 'auto',
     deleteCommand: typeof c.deleteCommand === 'string' && c.deleteCommand !== '' ? c.deleteCommand : undefined,

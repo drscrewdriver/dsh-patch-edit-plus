@@ -4,18 +4,27 @@
  * One `apply_patch` tool accepting git/unified diff (default) and Codex
  * `apply_patch` syntax (opt-in). All-or-nothing application through the
  * official fs write-intent dance; delete/move through the sandbox-aware
- * shell. Compatible with DSH 0.1.2-rc.1 through 0.1.5-rc.2: the tool
- * authoring contract is byte-identical across those versions, so a single
- * code path serves both; only settings registration needs the dual-API
- * fallback (`installSection` first, `register` second).
+ * shell. Targets DSH 0.1.7+: settings are declarative — the fields marked
+ * `.volatile()` in `Config` render the settings form automatically (no
+ * registration call), and `loader/volatile-update` drives re-registration
+ * without a plugin remount. This line drops the pre-0.1.7 hosts; the
+ * 0.1.2-rc.1 ~ 0.1.5-rc.2 line stays on its maintenance branch.
  *
  * @module dsh-patch-edit-plus
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { Config, resolveConfig } from './config.js'
+import { resolveConfig } from './config.js'
 import type { Config as PluginConfig } from './config.js'
 import { registerApplyPatchTool } from './register.js'
+
+// The dev pins (0.1.2-rc.1 era) predate the 0.1.7 loader event. The 0.1.7 host
+// emits it for volatile-only config changes and passes the changed paths.
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    'loader/volatile-update': (paths: string[]) => void
+  }
+}
 
 /** Cordis plugin name used by Loader diagnostics. */
 export const name = 'dsh-patch-edit-plus'
@@ -37,53 +46,24 @@ export const name = 'dsh-patch-edit-plus'
  */
 export const inject = ['tools', 'fs']
 
+export { Config } from './config.js'
+
 /**
- * Settings namespace. Must match dsh-settings `NAMESPACE_PATTERN`
- * (`/^[a-z][a-z0-9-]*$/`) on every target version: letters, digits and
- * hyphens only — an underscore made `register()` throw before anything
- * persisted, so no migration is needed.
+ * Register the tool from the current config snapshot.
+ *
+ * 登记级 key。工具「描述」把可用语法固化进去了（tool.ts 拼 `Accepts ${styles}`），
+ * 所以判定必须覆盖整份 resolved config，而不是只看 allowCodexPatch。
  */
-export const SETTINGS_NAMESPACE = 'patch-edit-plus'
-
-export { Config }
-
-/** Owner-facing handle returned by the legacy `register` API. */
-interface SettingsScopeFace {
-  get(): PluginConfig
-  watch(callback: () => void): () => void
-}
-
-/** Settings service face covering both the 0.1.2+ and legacy registration APIs. */
-interface SettingsFace {
-  installSection?(
-    owner: unknown,
-    namespace: string,
-    schema: unknown,
-    entry: unknown,
-    hooks: { setSource(current: () => PluginConfig): void; onChange(): void },
-  ): unknown
-  register?(
-    namespace: string,
-    schema: unknown,
-    options: { base?: unknown },
-  ): SettingsScopeFace | undefined
-}
-
-/** Register the tool and the settings namespace. Every registration is scoped to this plugin. */
 export function apply(ctx: Context, config?: PluginConfig): void {
+  // 组合条目（0.1.7 起 volatile 字段在其中是 live 引用）：rejudge 每次整体
+  // 重解析一次，一次调用内是同一份快照；跨调用的最新值由事件驱动重取。
   const compositionEntry = config ?? {}
 
-  // 权威来源：设置层挂载时是解析后的 scope，否则是组合条目。
-  // installSection 保证在每次匹配的 onChange 之前先调用 setSource（attach 与 detach 各一次）。
-  let readSource: () => PluginConfig = () => compositionEntry
-
   let disposer: (() => void) | null = null
-  // 登记级 key。工具「描述」把可用语法固化进去了（tool.ts 拼 `Accepts ${styles}`），
-  // 所以判定必须覆盖整份 resolved config，而不是只看 allowCodexPatch。
   let registeredKey: string | null = null
 
   const rejudge = (): void => {
-    const next = resolveConfig(readSource())
+    const next = resolveConfig(compositionEntry)
     const key = JSON.stringify(next)
     if (key === registeredKey) return
     disposer?.()
@@ -100,23 +80,9 @@ export function apply(ctx: Context, config?: PluginConfig): void {
     }
   })
 
-  ctx.inject(['settings'], (settingsCtx) => {
-    const settings = (settingsCtx as unknown as { settings?: SettingsFace }).settings
-      ?? (settingsCtx as unknown as SettingsFace)
-    if (typeof settings?.installSection === 'function') {
-      settings.installSection(ctx, SETTINGS_NAMESPACE, Config, compositionEntry, {
-        setSource: (current) => { readSource = current },
-        onChange: () => { rejudge() },
-      })
-      return
-    }
-    if (typeof settings?.register === 'function') {
-      const scope = settings.register(SETTINGS_NAMESPACE, Config, { base: compositionEntry })
-      if (scope !== undefined) {
-        readSource = () => scope.get()
-        scope.watch(() => { rejudge() })
-        rejudge()
-      }
-    }
+  // 0.1.7+: 只有 volatile 字段变更才走这里（不 remount）；普通字段变更会整体
+  // remount 插件，新一次 `apply` 自然读到全部新值。等值变更宿主不通知。
+  ctx.on('loader/volatile-update', () => {
+    rejudge()
   })
 }

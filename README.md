@@ -6,11 +6,10 @@ Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepsee
 
 | DSH version | Status | Notes |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ supported | Tool authoring contract (`defineTool` DSL, presentation intents) is byte-identical across 0.1.2–0.1.5; one code path serves both. |
-| `0.1.3-alpha.x` | ✅ supported | Same as above. |
-| `0.1.5-rc.2` | ✅ statically verified | `npm run typecheck:0.1.5` typechecks `src/` against the real `0.1.5-rc.2` peer packages. No `readByteRange` usage, no 0.1.5-only PTC identifiers. |
+| `0.1.7-rc.1+` | ✅ supported (this line, v0.2.0+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. No registration call. |
+| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ maintenance line | Served by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. 0.1.7 removed the imperative settings APIs the dual-API fallback relied on, so one codebase cannot serve both. |
 
-Settings registration uses the dual-API fallback (`settings.installSection` on 0.1.2+, `settings.register` on older hosts).
+Settings are declarative on this line: fields marked `.volatile()` in `Config` become the settings form; the plugin subscribes to `loader/volatile-update` instead of receiving registration hooks.
 
 ## Why patch at all? (tool routing guide)
 

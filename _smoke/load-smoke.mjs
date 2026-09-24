@@ -93,23 +93,15 @@ const HOST_SERVICES = {
   // shell / sandbox / attachments / subprocess are not mounted in this stub.
 }
 const declaredServices = new Set(inject)
+const volatileListeners = []
 
 const rawCtx = {
   logger: { info: () => {}, warn: () => {}, error: () => {} },
   effect: (fn) => { const d = fn(); if (typeof d === 'function') disposers.push(d); return d },
-  // The settings stub mirrors the real installSection contract: capture the
-  // hooks and drive setSource/onChange once at attach, so the load path
-  // proves the plugin consumes the resolved source (a no-op stub is exactly
-  // how the wiring defect stayed invisible).
-  inject: (deps, cb) => cb({
-    settings: {
-      installSection: (_owner, _ns, _schema, _entry, hooks) => {
-        hooks.setSource(() => _entry)
-        hooks.onChange()
-        return { owner: _owner, ns: _ns }
-      },
-    },
-  }),
+  // 0.1.7: settings are declarative — there is no registration contract to
+  // stub. The plugin subscribes to volatile-field updates instead, and the
+  // registry below lets the smoke drive a committed change end-to-end.
+  on: (event, fn) => { if (event === 'loader/volatile-update') volatileListeners.push(fn) },
   get: () => undefined,
   waterfall: async (event, target, exec, next) => { waterfallCalls.push(event); return next() },
   emit: (event, ...args) => emitCalls.push([event, ...args]),
@@ -181,6 +173,24 @@ try {
   if (dry.applied !== false || files.get('/work/a.txt') !== before) throw new Error('dryRun wrote to disk')
   ok('codex style applies when enabled; dryRun writes nothing')
 } catch (error) { bad('codex/dryRun end-to-end', error) }
+
+try {
+  disposers.splice(0).forEach(d => d())
+  registered.clear()
+  volatileListeners.length = 0
+  let codexOn = false
+  apply(ctx, { allowCodexPatch: { get: () => codexOn } })
+  if (registered.get('apply_patch').description.includes('Codex apply_patch syntax')) {
+    throw new Error('live volatile ref was not resolved at attach')
+  }
+  codexOn = true
+  for (const fn of volatileListeners) fn(['allowCodexPatch'])
+  if (!registered.get('apply_patch').description.includes('Codex apply_patch syntax')) {
+    throw new Error('volatile update did not re-register the tool')
+  }
+  if (registered.size !== 1) throw new Error('volatile update duplicated the tool registration')
+  ok('volatile update re-registers in place (live ref read, no remount)')
+} catch (error) { bad('volatile-update wiring', error) }
 
 try {
   disposers.splice(0).forEach(d => d())
