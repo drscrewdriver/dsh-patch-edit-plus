@@ -1,6 +1,6 @@
 {
   "name": "dsh-patch-edit-plus",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, with a DSH 0.1.7+ line (declarative volatile settings).",
   "type": "module",
   "repository": {
@@ -47,7 +47,7 @@
   },
   "engines": {
     "node": ">=20",
-    "dsh": ">=0.1.7-rc.1 <0.2.0-0"
+    "dsh": ">=0.1.7-rc.1 <0.1.8-0"
   },
   "license": "MIT",
   "keywords": [
@@ -62,10 +62,10 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-fs": ">=0.1.7-rc.1 <0.2.0-0",
-    "@deepseek-ai/dsh-sandbox": ">=0.1.7-rc.1 <0.2.0-0",
-    "@deepseek-ai/dsh-shell": ">=0.1.7-rc.1 <0.2.0-0",
-    "@deepseek-ai/dsh-tools": ">=0.1.7-rc.1 <0.2.0-0"
+    "@deepseek-ai/dsh-fs": ">=0.1.7-rc.1 <0.1.8-0",
+    "@deepseek-ai/dsh-sandbox": ">=0.1.7-rc.1 <0.1.8-0",
+    "@deepseek-ai/dsh-shell": ">=0.1.7-rc.1 <0.1.8-0",
+    "@deepseek-ai/dsh-tools": ">=0.1.7-rc.1 <0.1.8-0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
