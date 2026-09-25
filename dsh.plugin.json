@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "engines": {
-    "dsh": ">=0.1.2-rc.1 <0.2.0-0"
+    "dsh": ">=0.1.2-rc.1 <0.1.3-0"
   },
   "components": {
     "host": "lib/index.js"
