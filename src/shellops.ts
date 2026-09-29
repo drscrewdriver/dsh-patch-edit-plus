@@ -15,7 +15,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
 import type { FsTarget } from '@deepseek-ai/dsh-fs'
 import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
-import type { ShellExecRequest, ShellExecutor, ShellRunResult } from '@deepseek-ai/dsh-shell'
+import type { ShellExecRequest, ShellExecutor, ShellExecution, ShellRunResult } from '@deepseek-ai/dsh-shell'
 import type { ResolvedConfig } from './config.js'
 import { PatchError, unsupportedShellError } from './errors.js'
 
@@ -50,7 +50,7 @@ export function moveTemplate(cfg: ResolvedConfig): string {
 export function resolveShell(ctx: Context): ShellExecutor | undefined {
   try {
     const shell = (ctx as unknown as { shell?: ShellExecutor }).shell
-    return shell !== undefined && typeof shell.run === 'function' && typeof shell.resolve === 'function' ? shell : undefined
+    return shell !== undefined && typeof shell.execute === 'function' && typeof shell.resolve === 'function' ? shell : undefined
   } catch {
     return undefined
   }
@@ -106,7 +106,8 @@ function requireShell(ctx: Context, cfg: ResolvedConfig): ShellExecutor {
 
 async function runShell(shell: ShellExecutor, request: ShellExecRequest): Promise<ShellRunResult> {
   try {
-    return await shell.run(shell.resolve(request))
+    const execution: ShellExecution = await shell.execute(shell.resolve(request))
+    return await execution.result()
   } catch (error: unknown) {
     const detail = error instanceof Error ? error.message : String(error)
     throw new PatchError('IO', `shell execution failed: ${detail}`)

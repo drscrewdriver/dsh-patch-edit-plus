@@ -82,7 +82,7 @@ describe('official write-intent dance', () => {
       '*** Delete File: old.txt',
       '*** End Patch',
     ].join('\n')
-    const shell = { resolve: (r: unknown) => r, run: async (r: { command: string; env?: Record<string, string> }) => { rig.fs.files.delete(r.env?.DSH_PATCH_TARGET ?? ''); return { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } } } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: { command: string; env?: Record<string, string> }) => { rig.fs.files.delete(r.env?.DSH_PATCH_TARGET ?? ''); const res = { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }; return { result: async () => res } } }
     const { buildApplyPatchTool } = await import('../src/tool.js')
     const tool = buildApplyPatchTool('apply_patch', { fs: rig.fs, waterfall: async (_e: string, _t: unknown, _x: unknown, next: () => unknown) => next(), emit: () => {}, shell } as never, rig.cfg)
     const value = await tool.execute({ patch }, rig.exec) as ApplyPatchResult
