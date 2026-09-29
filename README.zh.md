@@ -6,8 +6,10 @@
 
 | DSH 版本 | 状态 | 说明 |
 |---|---|---|
-| `0.1.7-rc.1+` | ✅ 支持（本线，v0.2.0+） | 声明式设置：`allowCodexPatch` 标记 `.volatile()`——设置表单自动生成，`loader/volatile-update` 驱动工具原位重注册（不 remount），无任何注册调用。 |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ 维护线 | 由 0.1.7 前的分支 / `dsh-0.1.5` dist-tag 服务。0.1.7 删除了双 API 回退所依赖的命令式注册 API，一份代码无法同时兼容两代。 |
+| `0.1.7-rc.1+` | ✅ 支持（本线，v0.2.1+） | 声明式设置：`allowCodexPatch` 标记 `.volatile()`——设置表单自动生成，`loader/volatile-update` 驱动工具原位重注册（不 remount）。v0.2.3 修复 Delete/Move：shell 鸭子探测查 `run()` 在真实 0.1.7 宿主永不命中（`run` 在 0.1.2→0.1.7 间改名为 `execute`），Delete/Move 被静默降级为 UNSUPPORTED；现改用 `execute()` + `result()`。 |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ 维护线 | 由已发布的 `0.1.2`（main 分支）服务。 |
+| `0.1.5-rc.x` | ↗ 维护线 | 由 `dsh-0.1.5` dist-tag（v0.2.2+）服务。 |
+| `0.2.0-rc.1+` | ↗ 下一线 | 由 `dsh-0.2.0` dist-tag（v0.3.0+）服务。 |
 
 本线的 settings 是声明式的：`Config` 中标记 `.volatile()` 的字段即设置表单；插件订阅 `loader/volatile-update`，不再接收注册 hooks。
 
@@ -107,8 +109,8 @@ dsh web --dump-config   # 确认插件行出现
 
 ```bash
 npm install
-npm run typecheck        # 针对 0.1.2-rc.1 peer 包（devDependencies）
-npm run typecheck:0.1.5  # 针对 0.1.5-rc.2 peer 包（双版本静态核验）
+npm run typecheck        # 针对 0.1.7-rc.2 peer 包（devDependencies）
+npm run typecheck:0.1.5  # 对真实 0.1.5-rc.2 peer 包的遗留交叉核验
 npm test                 # vitest，90 个用例
 npm run lint
 npm run build            # lib/

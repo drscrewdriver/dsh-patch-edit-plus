@@ -1,5 +1,18 @@
 # 更新日志
 
+## [0.2.3] — 2026-09-29
+
+### 修复
+- **Delete/Move 在真实 0.1.7 宿主上被静默降级为 UNSUPPORTED**（0.2.1 携带的缺陷）：shell 鸭子探测查的是 `run()`，但 DSH 在 0.1.2→0.1.7 之间把 `ShellExecutor.run(spec)` 改名为 `execute(spec)`（返回 `ShellProcess` 句柄 + `result()` 前台投影）——探测永不命中，Delete/Move 一直落到结构化 UNSUPPORTED 错误。`shellops` 现改用 `shell.execute(...)` + `await execution.result()`，鸭子探测改查 `execute`；shell 测试 mock 同步迁移到 `execute()`/`result()` 形态。
+
+### 变更
+- devDependencies 4 项 `@deepseek-ai/dsh-*` `0.1.2-rc.1` → `0.1.7-rc.2`：类型基线与本线服务的宿主对齐（过期的钉版正是「假绿」形态——它掩盖了上述改名）。
+- 文档 ×4（README/INSTALL）：兼容矩阵重基于 `0.1.7` 线段；ja/ko 矩阵此前停留在 0.1.2~0.1.5 旧态。
+
+## [0.2.1] — 2026-09-25
+
+- 0.1.7 线首发（`dsh-0.1.7` dist-tag）：声明式设置——`allowCodexPatch` 标记 `.volatile()`，设置表单自动生成，工具经 `loader/volatile-update` 原位重注册（不 remount、无注册调用）。
+
 ## [0.1.2] — 2026-09-19
 
 ### 修复

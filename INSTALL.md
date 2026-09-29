@@ -19,15 +19,16 @@ The placeholders in this guide are:
 - `<profile>`: the DSH profile to modify, usually `web`;
 - `dsh-patch-edit-plus`: the npm package, the runtime plugin ID, and the id of the single row the bundle patch inserts.
 
-> **Supported DSH range: `>=0.1.2-rc.1 <0.2.0-0`.**
+> **Supported DSH range: `>=0.1.7-rc.1 <0.1.8-0`** (this release line, dist-tag `dsh-0.1.7`).
 >
 > Check the running version with `dsh --version` first.
 >
 > | DSH version | Status | Notes |
 > | --- | --- | --- |
-> | `0.1.2-rc.1` | supported | The tool-authoring contract (`defineTool` DSL, presentation intents) is byte-identical across 0.1.2–0.1.5, so one code path serves both. |
-> | `0.1.3-alpha.x` | supported | Same as above. |
-> | `0.1.5-rc.2` | statically verified | `npm run typecheck:0.1.5` typechecks `src/` against the real `0.1.5-rc.2` peer packages. No `readByteRange` usage and no 0.1.5-only identifiers. |
+> | `0.1.7-rc.1+` | supported | This line (v0.2.1+): declarative `.volatile()` settings; v0.2.3 fixes Delete/Move via the shell `execute()` API. |
+> | `0.1.2-rc.1` ~ `0.1.4` | not served here | Use the published `0.1.2` (main branch). |
+> | `0.1.5-rc.x` | not served here | Served by the `dsh-0.1.5` dist-tag (v0.2.2+). |
+> | `0.2.0+` | not served here | Served by the `dsh-0.2.0` dist-tag (v0.3.0+). |
 
 ## 0. Prerequisites and profile discovery
 

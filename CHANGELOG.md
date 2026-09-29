@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.3] — 2026-09-29
+
+### Fixed
+- **Delete/Move silently degraded to UNSUPPORTED on real 0.1.7 hosts** (defect shipped in 0.2.1): the shell duck-detect looked for `run()`, but DSH renamed `ShellExecutor.run(spec)` → `execute(spec)` (returning a `ShellProcess` handle with a `result()` foreground projection) between 0.1.2 and 0.1.7 — so the detect never matched and Delete/Move always fell back to a structured UNSUPPORTED error. `shellops` now calls `shell.execute(...)` + `await execution.result()` and duck-detects `execute`; shell test mocks moved to the `execute()`/`result()` shape.
+
+### Changed
+- devDependencies 4x `@deepseek-ai/dsh-*` `0.1.2-rc.1` → `0.1.7-rc.2`: the type baseline now matches the hosts this line serves (the stale pin was the "fake green" pattern — it masked the rename above).
+- Docs x4 (README/INSTALL): compatibility re-based to the `0.1.7` segment; ja/ko matrices were stale at the 0.1.2~0.1.5 wide claim.
+
+## [0.2.1] — 2026-09-25
+
+- First release of the 0.1.7 line (`dsh-0.1.7` dist-tag): declarative settings — `allowCodexPatch` marked `.volatile()`, settings form auto-rendered, tool re-registered in place via `loader/volatile-update` (no remount, no registration call).
+
 ## [0.1.2] — 2026-09-19
 
 ### Fixed

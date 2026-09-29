@@ -6,11 +6,12 @@
 
 | DSH バージョン | ステータス | 備考 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ サポート対象 | ツールオーサリング契約（`defineTool` DSL、presentation intents）は 0.1.2〜0.1.5 でバイト単位で同一であり、1 つのコードパスが両方を担います。 |
-| `0.1.3-alpha.x` | ✅ サポート対象 | 上記と同じ。 |
-| `0.1.5-rc.2` | ✅ 静的検証済み | `npm run typecheck:0.1.5` は実際の `0.1.5-rc.2` ピアパッケージに対して `src/` を型チェックします。`readByteRange` の使用はなく、0.1.5 専用の PTC 識別子もありません。 |
+| `0.1.7-rc.1+` | ✅ サポート対象（本ライン、v0.2.1+） | 宣言的設定：`allowCodexPatch` を `.volatile()` とマーク — 設定フォームは自動生成され、`loader/volatile-update` が remount なしでツールをその場で再登録します。v0.2.3 は Delete/Move を修正：shell のダックタイピング検出が `run()` を見ていましたが、実 0.1.7 ホストでは決して一致しません（`run` は 0.1.2→0.1.7 の間に `execute` に改名）、Delete/Move は UNSUPPORTED にサイレント降格していました。現在は `execute()` + `result()` を使用。 |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ メンテナンスライン | 公開済みの `0.1.2`（main ブランチ）が担います。 |
+| `0.1.5-rc.x` | ↗ メンテナンスライン | `dsh-0.1.5` dist-tag（v0.2.2+）が担います。 |
+| `0.2.0-rc.1+` | ↗ 次ライン | `dsh-0.2.0` dist-tag（v0.3.0+）が担います。 |
 
-設定の登録はデュアル API フォールバック（0.1.2 以降では `settings.installSection`、旧ホストでは `settings.register`）を使用します。
+本ラインの設定は宣言的です：`Config` で `.volatile()` とマークされたフィールドが設定フォームになり、プラグインは登録 hooks を受け取る代わりに `loader/volatile-update` を購読します。
 
 ## そもそもなぜパッチなのか？（ツールルーティングガイド）
 
@@ -109,8 +110,8 @@ dsh web --dump-config   # verify the plugin row appears
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
+npm run typecheck        # against 0.1.7-rc.2 peers (devDependencies)
+npm run typecheck:0.1.5  # 実在の 0.1.5-rc.2 ピアに対するレガシー交叉検証
 npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/

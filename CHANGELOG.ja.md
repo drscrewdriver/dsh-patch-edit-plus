@@ -1,5 +1,18 @@
 # 変更履歴
 
+## [0.2.3] — 2026-09-29
+
+### 修正
+- **実 0.1.7 ホストで Delete/Move が UNSUPPORTED にサイレント降格**（0.2.1 で出荷された欠陥）：shell のダックタイピング検出は `run()` を見ていましたが、DSH は 0.1.2→0.1.7 の間に `ShellExecutor.run(spec)` を `execute(spec)` に改名（`ShellProcess` ハンドル + `result()` フォアグラウンド投影を返す）— 検出は決して一致せず、Delete/Move は常に構造化 UNSUPPORTED エラーに落ちていました。`shellops` は現在 `shell.execute(...)` + `await execution.result()` を使用し、ダックタイピングは `execute` を検出；shell テストモックも `execute()`/`result()` 形に移行。
+
+### 変更
+- devDependencies 4 件の `@deepseek-ai/dsh-*` を `0.1.2-rc.1` → `0.1.7-rc.2` に更新：型ベースラインを本ラインが担うホストに一致させました（古いピンは「偽グリーン」パターン — 上記の改名を隠していました）。
+- ドキュメント ×4（README/INSTALL）：互換性を `0.1.7` セグメントに再基準化；ja/ko マトリックスは 0.1.2〜0.1.5 の旧態のままでした。
+
+## [0.2.1] — 2026-09-25
+
+- 0.1.7 ライン初リリース（`dsh-0.1.7` dist-tag）：宣言的設定 — `allowCodexPatch` を `.volatile()` とマーク、設定フォーム自動生成、`loader/volatile-update` によるツールのその場再登録（remount なし、登録呼び出しなし）。
+
 ## [0.1.2] — 2026-09-19
 
 ### 修正

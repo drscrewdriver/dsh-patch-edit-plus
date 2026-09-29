@@ -6,11 +6,12 @@
 
 | DSH 버전 | 상태 | 비고 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ 지원됨 | 도구 작성 계약(`defineTool` DSL, 프레젠테이션 인텐트)은 0.1.2–0.1.5 전 구간에서 바이트 단위로 동일하므로 하나의 코드 경로가 양쪽을 모두 지원합니다. |
-| `0.1.3-alpha.x` | ✅ 지원됨 | 위와 동일합니다. |
-| `0.1.5-rc.2` | ✅ 정적 검증 완료 | `npm run typecheck:0.1.5`는 실제 `0.1.5-rc.2` peer 패키지를 대상으로 `src/`의 타입을 검사합니다. `readByteRange`를 사용하지 않으며, 0.1.5 전용 PTC 식별자도 없습니다. |
+| `0.1.7-rc.1+` | ✅ 지원됨(본 라인, v0.2.1+) | 선언적 설정: `allowCodexPatch`에 `.volatile()` 마크 — 설정 폼이 자동 생성되고, `loader/volatile-update`가 remount 없이 도구를 그 자리에서 재등록합니다. v0.2.3은 Delete/Move를 수정: shell 덕 타이핑 감지가 `run()`을 보았으나 실 0.1.7 호스트에서는 결코 일치하지 않았고(`run`은 0.1.2→0.1.7 사이에 `execute`로 개명), Delete/Move가 UNSUPPORTED로 조용히 강등되었습니다. 이제 `execute()` + `result()` 사용. |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ 유지보수 라인 | 게시된 `0.1.2`(main 브랜치)가 담당합니다. |
+| `0.1.5-rc.x` | ↗ 유지보수 라인 | `dsh-0.1.5` dist-tag(v0.2.2+)가 담당합니다. |
+| `0.2.0-rc.1+` | ↗ 다음 라인 | `dsh-0.2.0` dist-tag(v0.3.0+)가 담당합니다. |
 
-설정 등록은 이중 API 폴백을 사용합니다(0.1.2+ 에서는 `settings.installSection`, 이전 호스트에서는 `settings.register`).
+본 라인의 설정은 선언적입니다: `Config`에서 `.volatile()`로 마크된 필드가 설정 폼이 되고, 플러그인은 등록 hooks를 받는 대신 `loader/volatile-update`를 구독합니다.
 
 ## 왜 굳이 패치인가? (도구 라우팅 가이드)
 
@@ -109,8 +110,8 @@ dsh web --dump-config   # verify the plugin row appears
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
+npm run typecheck        # against 0.1.7-rc.2 peers (devDependencies)
+npm run typecheck:0.1.5  # 실제 0.1.5-rc.2 peer 대상 레거시 교차 검증
 npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/
