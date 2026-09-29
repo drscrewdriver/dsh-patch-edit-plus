@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.2] — 2026-09-29
+
+### Changed
+- **DSH line split**: this release serves the `0.1.5-rc` segment only — `peerDependencies`/`engines.dsh` capped to `>=0.1.5-rc.1 <0.1.6-0` (both manifests), published under the `dsh-0.1.5` dist-tag. `0.1.2-rc.1` ~ `0.1.4` remain served by the published `0.1.2` (main); `0.1.7` by `dsh-0.1.7` (v0.2.1+); `0.2.0` by `dsh-0.2.0` (v0.3.0+).
+- devDependencies 4x `@deepseek-ai/dsh-*` `0.1.2-rc.1` → `0.1.5-rc.3`: the type baseline now matches the hosts this line serves (the stale `0.1.2` pin was the "fake green" pattern — a baseline older than the served line can mask real contract breaks).
+- Docs x4 (README/INSTALL): compatibility matrix re-based to the `0.1.5-rc` segment.
+
+### Verified
+- No source changes required: `ShellExecutor.run(spec)` is intact across `0.1.5-rc.1`–`rc.3` (the `run` → `execute` rename lands in the 0.1.6→0.1.7 window), and the imperative settings fallback (`settings.register` / `installSection`) still exists on 0.1.5 hosts.
+- build / typecheck / test (94) / lint / smoke / `typecheck:0.1.5` (static proof against real `0.1.5-rc.2` peers) all green; lockfile regenerated against `0.1.5-rc.3`.
+
 ## [0.1.2] — 2026-09-19
 
 ### Fixed

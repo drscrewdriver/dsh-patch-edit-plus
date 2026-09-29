@@ -1,5 +1,16 @@
 # 更新日志
 
+## [0.2.2] — 2026-09-29
+
+### 变更
+- **DSH 线拆分**：本版本只服务 `0.1.5-rc` 线段——`peerDependencies`/`engines.dsh` 封顶到 `>=0.1.5-rc.1 <0.1.6-0`（双清单），经 `dsh-0.1.5` dist-tag 发布。`0.1.2-rc.1` ~ `0.1.4` 仍由已发布的 `0.1.2`（main）服务；`0.1.7` 由 `dsh-0.1.7`（v0.2.1+）服务；`0.2.0` 由 `dsh-0.2.0`（v0.3.0+）服务。
+- devDependencies 4 项 `@deepseek-ai/dsh-*` `0.1.2-rc.1` → `0.1.5-rc.3`：类型基线与本线服务的宿主对齐（过期的 `0.1.2` 钉版正是「假绿」形态——基线早于服务线会掩盖真实契约断裂）。
+- 文档 ×4（README/INSTALL）：兼容矩阵重基于 `0.1.5-rc` 线段。
+
+### 验证
+- 无需源码改动：`ShellExecutor.run(spec)` 在 `0.1.5-rc.1`–`rc.3` 全程未变（`run` → `execute` 改名落在 0.1.6→0.1.7 区间），且 0.1.5 宿主仍有命令式设置回退（`settings.register` / `installSection`）。
+- build / typecheck / test（94）/ lint / smoke / `typecheck:0.1.5`（对真实 `0.1.5-rc.2` peer 静态核验）全绿；lockfile 按 `0.1.5-rc.3` 重新生成。
+
 ## [0.1.2] — 2026-09-19
 
 ### 修复

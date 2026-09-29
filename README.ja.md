@@ -6,9 +6,8 @@
 
 | DSH バージョン | ステータス | 備考 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ サポート対象 | ツールオーサリング契約（`defineTool` DSL、presentation intents）は 0.1.2〜0.1.5 でバイト単位で同一であり、1 つのコードパスが両方を担います。 |
-| `0.1.3-alpha.x` | ✅ サポート対象 | 上記と同じ。 |
-| `0.1.5-rc.2` | ✅ 静的検証済み | `npm run typecheck:0.1.5` は実際の `0.1.5-rc.2` ピアパッケージに対して `src/` を型チェックします。`readByteRange` の使用はなく、0.1.5 専用の PTC 識別子もありません。 |
+| `0.1.5-rc.1+` | ✅ サポート対象（本ライン、v0.2.2+） | 型ベースラインを実在の `0.1.5-rc.3` ピアに固定し、`peerDependencies`/`engines.dsh` は `>=0.1.5-rc.1 <0.1.6-0` にキャップ。`dsh-0.1.5` dist-tag で公開。 |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ メンテナンスライン | 公開済みの `0.1.2`（main ブランチ）が担います。`0.1.6+` は別契約（shell の `run` → `execute`）であり、compat/0.1.7・compat/0.2.0 ラインが担います。 |
 
 設定の登録はデュアル API フォールバック（0.1.2 以降では `settings.installSection`、旧ホストでは `settings.register`）を使用します。
 
@@ -109,8 +108,8 @@ dsh web --dump-config   # verify the plugin row appears
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
+npm run typecheck        # against 0.1.5-rc.3 peers (devDependencies)
+npm run typecheck:0.1.5  # 実在の 0.1.5-rc.2 ピアに対する静的クロス検証
 npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/

@@ -6,9 +6,8 @@
 
 | DSH 버전 | 상태 | 비고 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ 지원됨 | 도구 작성 계약(`defineTool` DSL, 프레젠테이션 인텐트)은 0.1.2–0.1.5 전 구간에서 바이트 단위로 동일하므로 하나의 코드 경로가 양쪽을 모두 지원합니다. |
-| `0.1.3-alpha.x` | ✅ 지원됨 | 위와 동일합니다. |
-| `0.1.5-rc.2` | ✅ 정적 검증 완료 | `npm run typecheck:0.1.5`는 실제 `0.1.5-rc.2` peer 패키지를 대상으로 `src/`의 타입을 검사합니다. `readByteRange`를 사용하지 않으며, 0.1.5 전용 PTC 식별자도 없습니다. |
+| `0.1.5-rc.1+` | ✅ 지원됨(본 라인, v0.2.2+) | 타입 베이스라인을 실제 `0.1.5-rc.3` peer에 고정하고, `peerDependencies`/`engines.dsh`는 `>=0.1.5-rc.1 <0.1.6-0`으로 제한합니다. `dsh-0.1.5` dist-tag로 게시됩니다. |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ 유지보수 라인 | 게시된 `0.1.2`(main 브랜치)가 담당합니다. `0.1.6+`은 별도 계약(shell `run` → `execute`)이며 compat/0.1.7·compat/0.2.0 라인이 지원합니다. |
 
 설정 등록은 이중 API 폴백을 사용합니다(0.1.2+ 에서는 `settings.installSection`, 이전 호스트에서는 `settings.register`).
 
@@ -109,8 +108,8 @@ dsh web --dump-config   # verify the plugin row appears
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
+npm run typecheck        # against 0.1.5-rc.3 peers (devDependencies)
+npm run typecheck:0.1.5  # 실제 0.1.5-rc.2 peer 대상 정적 교차 검증
 npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/

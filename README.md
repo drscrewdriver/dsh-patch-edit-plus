@@ -6,9 +6,8 @@ Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepsee
 
 | DSH version | Status | Notes |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ supported | Tool authoring contract (`defineTool` DSL, presentation intents) is byte-identical across 0.1.2–0.1.5; one code path serves both. |
-| `0.1.3-alpha.x` | ✅ supported | Same as above. |
-| `0.1.5-rc.2` | ✅ statically verified | `npm run typecheck:0.1.5` typechecks `src/` against the real `0.1.5-rc.2` peer packages. No `readByteRange` usage, no 0.1.5-only PTC identifiers. |
+| `0.1.5-rc.1+` | ✅ supported (this line, v0.2.2+) | Type baseline pinned to the real `0.1.5-rc.3` peers; `peerDependencies`/`engines.dsh` capped to `>=0.1.5-rc.1 <0.1.6-0`. Published under the `dsh-0.1.5` dist-tag. |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ maintenance line | Served by the published `0.1.2` (main branch). `0.1.6+` is a different contract (shell `run` → `execute`) and is served by the compat/0.1.7 and compat/0.2.0 lines. |
 
 Settings registration uses the dual-API fallback (`settings.installSection` on 0.1.2+, `settings.register` on older hosts).
 
@@ -109,8 +108,8 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
+npm run typecheck        # against 0.1.5-rc.3 peers (devDependencies)
+npm run typecheck:0.1.5  # static cross-proof against real 0.1.5-rc.2 peers
 npm test                 # vitest, 90 tests
 npm run lint
 npm run build            # lib/

@@ -6,9 +6,8 @@
 
 | DSH 版本 | 状态 | 说明 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ 支持 | 工具编写契约（`defineTool` DSL、presentation 视图）在 0.1.2–0.1.5 间逐字节未变，单一代码路径服务两个版本。 |
-| `0.1.3-alpha.x` | ✅ 支持 | 同上。 |
-| `0.1.5-rc.2` | ✅ 静态核验 | `npm run typecheck:0.1.5` 用真实 `0.1.5-rc.2` peer 包对 `src/` 做类型核验；不调用 `readByteRange`，不含 0.1.5-only PTC 字符串。 |
+| `0.1.5-rc.1+` | ✅ 支持（本线，v0.2.2+） | 类型基线钉在真实 `0.1.5-rc.3` peer 包；`peerDependencies`/`engines.dsh` 封顶到 `>=0.1.5-rc.1 <0.1.6-0`。经 `dsh-0.1.5` dist-tag 发布。 |
+| `0.1.2-rc.1` ~ `0.1.4` | ↗ 维护线 | 由已发布的 `0.1.2`（main 分支）服务。`0.1.6+` 是另一套契约（shell `run` → `execute`），由 compat/0.1.7 与 compat/0.2.0 线服务。 |
 
 settings 注册走双 API 回退：0.1.2+ 的 `settings.installSection` 优先，旧版回退 `settings.register`。
 
@@ -108,8 +107,8 @@ dsh web --dump-config   # 确认插件行出现
 
 ```bash
 npm install
-npm run typecheck        # 针对 0.1.2-rc.1 peer 包（devDependencies）
-npm run typecheck:0.1.5  # 针对 0.1.5-rc.2 peer 包（双版本静态核验）
+npm run typecheck        # 针对 0.1.5-rc.3 peer 包（devDependencies）
+npm run typecheck:0.1.5  # 对真实 0.1.5-rc.2 peer 包做交叉静态核验
 npm test                 # vitest，90 个用例
 npm run lint
 npm run build            # lib/
