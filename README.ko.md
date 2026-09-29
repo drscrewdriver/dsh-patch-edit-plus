@@ -6,11 +6,11 @@
 
 | DSH 버전 | 상태 | 비고 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ 지원됨 | 도구 작성 계약(`defineTool` DSL, 프레젠테이션 인텐트)은 0.1.2–0.1.5 전 구간에서 바이트 단위로 동일하므로 하나의 코드 경로가 양쪽을 모두 지원합니다. |
-| `0.1.3-alpha.x` | ✅ 지원됨 | 위와 동일합니다. |
-| `0.1.5-rc.2` | ✅ 정적 검증 완료 | `npm run typecheck:0.1.5`는 실제 `0.1.5-rc.2` peer 패키지를 대상으로 `src/`의 타입을 검사합니다. `readByteRange`를 사용하지 않으며, 0.1.5 전용 PTC 식별자도 없습니다. |
+| `0.2.0-rc.1+` | ✅ 지원됨(본 라인, v0.3.0+) | 선언적 설정: `allowCodexPatch`에 `.volatile()`가 표시되어 설정 폼이 자동 생성되고, `loader/volatile-update`가 리마운트 없이 도구를 그 자리에서 재등록합니다. 등록 호출이 없습니다. Delete/Move는 `ShellExecutor.execute()` + `result()` 포그라운드 API로 이전되었습니다. |
+| `0.1.7-rc.1+` | ↗ 유지보수 라인 | `compat/0.1.7` 브랜치 / `dsh-0.1.7` dist-tag가 담당(해당 라인의 v0.2.1). 0.2.0 이전에 셸 실행기의 `run`이 `execute`로 이름이 바뀌었고(0.1.2 → 0.1.7 사이), 하나의 코드베이스로 두 라인을 타입 안전하게 지원할 수 없습니다. |
+| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ 유지보수 라인 | 0.1.7 이전 브랜치 / `dsh-0.1.5` dist-tag가 담당. 0.1.7은 이중 API 폴백이 의존하던 명령형 등록 API를 제거했습니다. |
 
-설정 등록은 이중 API 폴백을 사용합니다(0.1.2+ 에서는 `settings.installSection`, 이전 호스트에서는 `settings.register`).
+본 라인의 설정은 선언적입니다: `Config`에서 `.volatile()`로 표시된 필드가 곧 설정 폼이며, 플러그인은 등록 훅 대신 `loader/volatile-update`를 구독합니다.
 
 ## 왜 굳이 패치인가? (도구 라우팅 가이드)
 
@@ -109,9 +109,9 @@ dsh web --dump-config   # verify the plugin row appears
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
-npm test                 # vitest, 90 tests
+npm run typecheck        # against 0.2.0-rc.1 peers (devDependencies)
+npm run typecheck:0.2.0  # against real 0.2.0-rc.1 peer packages installed from the registry (dual-baseline proof)
+npm test                 # vitest, 92 tests
 npm run lint
 npm run build            # lib/
 npm run verify:source    # static safety assertions (intent dance, no node:fs, …)

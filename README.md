@@ -6,8 +6,9 @@ Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepsee
 
 | DSH version | Status | Notes |
 |---|---|---|
-| `0.1.7-rc.1+` | ✅ supported (this line, v0.2.0+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. No registration call. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ maintenance line | Served by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. 0.1.7 removed the imperative settings APIs the dual-API fallback relied on, so one codebase cannot serve both. |
+| `0.2.0-rc.1+` | ✅ supported (this line, v0.3.0+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. No registration call. Delete/Move migrated to the `ShellExecutor.execute()` + `result()` foreground API. |
+| `0.1.7-rc.1+` | ↗ maintenance line | Served by the `compat/0.1.7` branch / `dsh-0.1.7` dist-tag (v0.2.1 there). 0.2.0's shell executor renamed `run` → `execute` (introduced between 0.1.2 and 0.1.7), so one codebase cannot serve both lines type-safely. |
+| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ maintenance line | Served by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. 0.1.7 removed the imperative settings APIs the dual-API fallback relied on. |
 
 Settings are declarative on this line: fields marked `.volatile()` in `Config` become the settings form; the plugin subscribes to `loader/volatile-update` instead of receiving registration hooks.
 
@@ -108,9 +109,9 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
-npm test                 # vitest, 90 tests
+npm run typecheck        # against 0.2.0-rc.1 peers (devDependencies)
+npm run typecheck:0.2.0  # against real 0.2.0-rc.1 peer packages installed from the registry (dual-baseline proof)
+npm test                 # vitest, 92 tests
 npm run lint
 npm run build            # lib/
 npm run verify:source    # static safety assertions (intent dance, no node:fs, …)

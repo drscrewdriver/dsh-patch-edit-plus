@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 /**
  * Static cross-version verification: typecheck the plugin's src against the
- * 0.1.5-rc.2 peer packages (the local machine runs 0.1.5-rc.2, while the
- * regular devDependencies pin the 0.1.2-rc.1 type baseline). Installs the 0.1.5 peer set into
- * `.compat-0.1.5/` and runs tsc with `paths` redirected there.
+ * 0.2.0-rc.1 peer packages (the real host peer line for this branch, while the
+ * regular devDependencies pin the same 0.2.0-rc.1 type baseline). Installs the
+ * 0.2.0 peer set into `.compat-0.2.0/` and runs tsc with `paths` redirected there.
  */
 import { execSync } from 'node:child_process'
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = join(import.meta.dirname, '..')
-const COMPAT = join(ROOT, '.compat-0.1.5')
+const COMPAT = join(ROOT, '.compat-0.2.0')
 const PEERS = ['@deepseek-ai/dsh-fs', '@deepseek-ai/dsh-shell', '@deepseek-ai/dsh-tools', '@deepseek-ai/dsh-sandbox']
 // cordis is versioned independently (4.x line) and identical across DSH versions.
 const CORDIS = { '@deepseek-ai/cordis': '^4.0.2' }
-const VERSION = '0.1.5-rc.2'
+const VERSION = '0.2.0-rc.1'
 
 rmSync(COMPAT, { recursive: true, force: true })
 mkdirSync(COMPAT, { recursive: true })
 writeFileSync(join(COMPAT, 'package.json'), JSON.stringify({
-  name: 'dsh-patch-edit-plus-compat-015',
+  name: 'dsh-patch-edit-plus-compat-020',
   private: true,
   version: '0.0.0',
   type: 'module',
@@ -42,8 +42,8 @@ const tsconfig = {
 writeFileSync(join(COMPAT, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2))
 
 try {
-  execSync('npx tsc -p .compat-0.1.5/tsconfig.json', { cwd: ROOT, stdio: 'inherit' })
-  console.log('0.1.5-rc.2 COMPAT TYPECHECK: PASS')
+  execSync('npx tsc -p .compat-0.2.0/tsconfig.json', { cwd: ROOT, stdio: 'inherit' })
+  console.log('0.2.0-rc.1 COMPAT TYPECHECK: PASS')
 } finally {
   rmSync(COMPAT, { recursive: true, force: true })
 }

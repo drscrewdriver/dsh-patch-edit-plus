@@ -19,15 +19,15 @@ The placeholders in this guide are:
 - `<profile>`: the DSH profile to modify, usually `web`;
 - `dsh-patch-edit-plus`: the npm package, the runtime plugin ID, and the id of the single row the bundle patch inserts.
 
-> **Supported DSH range: `>=0.1.2-rc.1 <0.2.0-0`.**
+> **Supported DSH range: `>=0.2.0-rc.1 <0.2.1-0`.**
 >
 > Check the running version with `dsh --version` first.
 >
 > | DSH version | Status | Notes |
 > | --- | --- | --- |
-> | `0.1.2-rc.1` | supported | The tool-authoring contract (`defineTool` DSL, presentation intents) is byte-identical across 0.1.2–0.1.5, so one code path serves both. |
-> | `0.1.3-alpha.x` | supported | Same as above. |
-> | `0.1.5-rc.2` | statically verified | `npm run typecheck:0.1.5` typechecks `src/` against the real `0.1.5-rc.2` peer packages. No `readByteRange` usage and no 0.1.5-only identifiers. |
+> | `0.2.0-rc.1` | supported | This branch's target line. Typechecked against the real `0.2.0-rc.1` peer packages (`npm run typecheck:0.2.0`); Delete/Move use the `ShellExecutor.execute()` + `result()` foreground API. |
+> | `0.1.7-rc.1+` | served elsewhere | Maintained by the `compat/0.1.7` branch / `dsh-0.1.7` dist-tag (package version 0.2.1 there). |
+> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | served elsewhere | Maintained by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. |
 
 ## 0. Prerequisites and profile discovery
 

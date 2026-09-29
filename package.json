@@ -1,7 +1,7 @@
 {
   "name": "dsh-patch-edit-plus",
-  "version": "0.2.1",
-  "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, with a DSH 0.1.7+ line (declarative volatile settings).",
+  "version": "0.3.0",
+  "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, targeting the DSH 0.2.0 line (declarative volatile settings).",
   "type": "module",
   "repository": {
     "type": "git",
@@ -37,7 +37,7 @@
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc -p tsconfig.json",
-    "typecheck:0.1.5": "node scripts/typecheck-0.1.5.mjs",
+    "typecheck:0.2.0": "node scripts/typecheck-0.2.0.mjs",
     "lint": "eslint src tests scripts _smoke",
     "lint:fix": "eslint src tests scripts _smoke --fix",
     "test": "vitest run",
@@ -47,7 +47,7 @@
   },
   "engines": {
     "node": ">=20",
-    "dsh": ">=0.1.7-rc.1 <0.1.8-0"
+    "dsh": ">=0.2.0-rc.1 <0.2.1-0"
   },
   "license": "MIT",
   "keywords": [
@@ -62,10 +62,10 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-fs": ">=0.1.7-rc.1 <0.1.8-0",
-    "@deepseek-ai/dsh-sandbox": ">=0.1.7-rc.1 <0.1.8-0",
-    "@deepseek-ai/dsh-shell": ">=0.1.7-rc.1 <0.1.8-0",
-    "@deepseek-ai/dsh-tools": ">=0.1.7-rc.1 <0.1.8-0"
+    "@deepseek-ai/dsh-fs": ">=0.2.0-rc.1 <0.2.1-0",
+    "@deepseek-ai/dsh-sandbox": ">=0.2.0-rc.1 <0.2.1-0",
+    "@deepseek-ai/dsh-shell": ">=0.2.0-rc.1 <0.2.1-0",
+    "@deepseek-ai/dsh-tools": ">=0.2.0-rc.1 <0.2.1-0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -89,10 +89,10 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-fs": "0.1.2-rc.1",
-    "@deepseek-ai/dsh-sandbox": "0.1.2-rc.1",
-    "@deepseek-ai/dsh-shell": "0.1.2-rc.1",
-    "@deepseek-ai/dsh-tools": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-fs": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-sandbox": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-shell": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.1",
     "@eslint/js": "^9.0.0",
     "@types/node": "^22.0.0",
     "eslint": "^9.0.0",

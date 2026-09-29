@@ -77,10 +77,11 @@ describe('apply_patch carries the per-call sandbox policy', () => {
     const requests: { sandboxPolicy?: unknown; command: string }[] = []
     const shell = {
       resolve: (request: unknown) => request,
-      run: async (request: { sandboxPolicy?: unknown; command: string }) => {
+      execute: async (request: { sandboxPolicy?: unknown; command: string }) => {
         requests.push(request)
         rig.fs.files.delete('/work/old.txt')
-        return { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }
+        const res = { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }
+        return { result: async () => res }
       },
     }
     const { buildApplyPatchTool } = await import('../src/tool.js')

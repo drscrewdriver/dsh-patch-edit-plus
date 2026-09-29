@@ -39,7 +39,7 @@ describe('end-to-end operations', () => {
   it('deletes a file through the shell face', async () => {
     const rig = makeRig({ allowCodexPatch: true }, { 'bye.txt': 'x\n' })
     const calls: unknown[] = []
-    const shell = { resolve: (r: unknown) => r, run: async (r: { command: string; env?: Record<string, string> }) => { rig.fs.files.delete(r.env?.DSH_PATCH_TARGET ?? ''); calls.push(r); return { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } } } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: { command: string; env?: Record<string, string> }) => { rig.fs.files.delete(r.env?.DSH_PATCH_TARGET ?? ''); calls.push(r); const res = { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }; return { result: async () => res } } }
     const { buildApplyPatchTool } = await import('../src/tool.js')
     const tool = buildApplyPatchTool('apply_patch', { fs: rig.fs, waterfall: async (_e: string, _t: unknown, _x: unknown, next: () => unknown) => next(), emit: () => {}, shell } as never, rig.cfg)
     const patch = ['*** Begin Patch', '*** Delete File: bye.txt', '*** End Patch'].join('\n')
@@ -55,12 +55,13 @@ describe('end-to-end operations', () => {
     const moves: Record<string, string> = {}
     const shell = {
       resolve: (r: unknown) => r,
-      run: async (r: { command: string; env: Record<string, string> }) => {
+      execute: async (r: { command: string; env: Record<string, string> }) => {
         moves[r.env.DSH_PATCH_SOURCE] = r.env.DSH_PATCH_TARGET
         const content = rig.fs.files.get(r.env.DSH_PATCH_SOURCE) ?? ''
         rig.fs.files.delete(r.env.DSH_PATCH_SOURCE)
         rig.fs.files.set(r.env.DSH_PATCH_TARGET, content)
-        return { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }
+        const res = { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }
+        return { result: async () => res }
       },
     }
     const { buildApplyPatchTool } = await import('../src/tool.js')
@@ -135,7 +136,7 @@ describe('end-to-end operations', () => {
     const patch = ['*** Begin Patch', '*** Delete File: ghost.txt', '*** End Patch'].join('\n')
     await expect(rig.runTool(patch)).rejects.toMatchObject({ code: 'UNSUPPORTED', message: /shell capability/ })
     // With a shell mounted the missing file becomes a CONFLICT at verify time.
-    const shell = { resolve: (r: unknown) => r, run: async () => ({ exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }) }
+    const shell = { resolve: (r: unknown) => r, execute: async () => { const res = { exitCode: 0, signal: null, timedOut: false, aborted: false, timeoutMs: 0, stdout: { text: '' }, stderr: { text: '' } }; return { result: async () => res } } }
     const { buildApplyPatchTool } = await import('../src/tool.js')
     const tool = buildApplyPatchTool('apply_patch', { fs: rig.fs, waterfall: async (_e: string, _t: unknown, _x: unknown, next: () => unknown) => next(), emit: () => {}, shell } as never, rig.cfg)
     await expect(tool.execute({ patch }, rig.exec)).rejects.toMatchObject({ code: 'CONFLICT', message: /does not exist/ })

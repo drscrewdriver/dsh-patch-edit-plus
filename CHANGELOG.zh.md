@@ -1,5 +1,12 @@
 # 更新日志
 
+## [0.3.0] — 2026-09-29
+
+### 变更
+
+- **支持 DSH 0.2.0 线（`compat/0.2.0` 分支）。** peer 范围与两份清单的 `engines.dsh` 改为 `>=0.2.0-rc.1 <0.2.1-0`；版本 0.3.0。devDependencies 钉住真实的 `0.2.0-rc.1` 类型基线，交叉校验脚本升级为 `npm run typecheck:0.2.0`（从 registry 干净安装真实 peer 包做核验）。0.1.x 宿主继续由 `compat/0.1.7` 分支 / `dsh-0.1.7` dist-tag 服务。
+- **Delete/Move 迁移到现行 shell 执行器 API。** 宿主在 0.1.2 → 0.1.7 线之间把 `ShellExecutor.run(spec)` 改名为 `execute(spec)`——返回 `ShellProcess` 句柄，前台结果经 `result()` 获取。旧的 devDependency 钉版（`0.1.2-rc.1`）掩盖了这一点：0.1.7 线的包（0.2.1）对过期基线假绿，且在真实 0.1.7+ 宿主上运行时基于 `run` 的鸭子探测永不命中，Delete/Move 实际降级为结构化 UNSUPPORTED 错误。本线改为调用 `shell.execute(...)` 并等待 `execution.result()`；执行器经 `execute` 做结构探测。
+
 ## [0.1.2] — 2026-09-19
 
 ### 修复

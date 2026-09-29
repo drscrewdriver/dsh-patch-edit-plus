@@ -19,15 +19,15 @@
 - `<profile>`：要改动的 DSH profile，通常是 `web`；
 - `dsh-patch-edit-plus`：npm 包名、运行时插件 ID，同时也是 bundle 补丁所插入的那一行 id。
 
-> **支持的 DSH 范围：`>=0.1.2-rc.1 <0.2.0-0`。**
+> **支持的 DSH 范围：`>=0.2.0-rc.1 <0.2.1-0`。**
 >
 > 先用 `dsh --version` 确认当前版本。
 >
 > | DSH 版本 | 状态 | 说明 |
 > | --- | --- | --- |
-> | `0.1.2-rc.1` | 支持 | 工具编写契约（`defineTool` DSL、呈现意图）在 0.1.2–0.1.5 之间逐字节一致，同一份代码路径可同时服务两者。 |
-> | `0.1.3-alpha.x` | 支持 | 同上。 |
-> | `0.1.5-rc.2` | 静态验证通过 | `npm run typecheck:0.1.5` 会拿真实的 `0.1.5-rc.2` peer 包对 `src/` 做类型检查。未使用 `readByteRange`，也不含 0.1.5 专有标识符。 |
+> | `0.2.0-rc.1` | 支持 | 本分支的目标线。已对 registry 真实安装的 `0.2.0-rc.1` peer 包做类型核验（`npm run typecheck:0.2.0`）；Delete/Move 使用 `ShellExecutor.execute()` + `result()` 前台 API。 |
+> | `0.1.7-rc.1+` | 由其他分支服务 | 由 `compat/0.1.7` 分支 / `dsh-0.1.7` dist-tag 维护（该线包版本 0.2.1）。 |
+> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | 由其他分支服务 | 由 0.1.7 前的分支 / `dsh-0.1.5` dist-tag 维护。 |
 
 ## 0. 前置条件与 profile 探查
 

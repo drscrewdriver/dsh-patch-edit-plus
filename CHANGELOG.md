@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] — 2026-09-29
+
+### Changed
+
+- **DSH 0.2.0 line support (`compat/0.2.0` branch).** Peer ranges and `engines.dsh` (both manifests) now declare `>=0.2.0-rc.1 <0.2.1-0`; version 0.3.0. devDependencies pin the real `0.2.0-rc.1` type baseline, and the cross-check script is upgraded to `npm run typecheck:0.2.0` (installs the real peer packages from the registry). 0.1.x hosts remain served by the `compat/0.1.7` branch / `dsh-0.1.7` dist-tag.
+- **Delete/Move migrated to the current shell executor API.** `ShellExecutor.run(spec)` was renamed `execute(spec)` — returning a `ShellProcess` handle with a `result()` foreground projection — between the 0.1.2 and 0.1.7 host lines. The old devDependency pin (`0.1.2-rc.1`) masked this: the 0.1.7-line package (0.2.1) typechecked green against a stale baseline, and at runtime on real 0.1.7+ hosts its `run`-based duck-typing never matched, so Delete/Move degraded to the structured UNSUPPORTED error. This line calls `shell.execute(...)` and awaits `execution.result()`; the executor is detected via `execute`.
+
 ## [0.1.2] — 2026-09-19
 
 ### Fixed

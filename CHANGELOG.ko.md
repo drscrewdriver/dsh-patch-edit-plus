@@ -1,5 +1,12 @@
 # 변경 이력
 
+## [0.3.0] — 2026-09-29
+
+### 변경됨
+
+- **DSH 0.2.0 라인 지원(`compat/0.2.0` 브랜치).** peer 범위와 두 매니페스트의 `engines.dsh`를 `>=0.2.0-rc.1 <0.2.1-0`으로 업데이트하고 버전은 0.3.0. devDependencies는 실제 `0.2.0-rc.1` 타입 베이스라인에 고정하고, 크로스 체크 스크립트를 `npm run typecheck:0.2.0`으로 업그레이드했습니다(registry에서 실제 peer 패키지를 설치해 검증). 0.1.x 호스트는 계속 `compat/0.1.7` 브랜치 / `dsh-0.1.7` dist-tag가 담당합니다.
+- **Delete/Move를 현행 셸 실행기 API로 이전.** 호스트는 0.1.2 → 0.1.7 라인 사이에 `ShellExecutor.run(spec)`을 `execute(spec)`로 이름을 바꿨습니다(`ShellProcess` 핸들을 반환하고, 포그라운드 결과는 `result()`로 획득). 이전 devDependency 고정(`0.1.2-rc.1`)이 이를 가렸습니다: 0.1.7 라인 패키지(0.2.1)는 낡은 베이스라인에 대해 그린으로 보였고, 실제 0.1.7+ 호스트에서는 `run` 기반 덕 타이핑이 일치하지 않아 Delete/Move가 구조화된 UNSUPPORTED 오류로 저하되었습니다. 본 라인은 `shell.execute(...)`를 호출하고 `execution.result()`를 기다리는 방식으로 변경하며, 실행기는 `execute`로 구조 검출합니다.
+
 ## [0.1.2] — 2026-09-19
 
 ### 수정됨

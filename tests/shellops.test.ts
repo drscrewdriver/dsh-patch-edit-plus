@@ -27,7 +27,7 @@ describe('shell ops', () => {
     const fs = new MemoryFs()
     fs.addFile('gone.txt', 'x\n')
     const requests: { command: string; env?: Record<string, string> }[] = []
-    const shell = { resolve: (r: unknown) => r, run: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return result(0) } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return { result: async () => result(0) } } }
     const tool = makeShellTool(fs, shell)
     await tool.execute({ patch: DELETE_PATCH }, shellExec())
     expect(requests).toHaveLength(1)
@@ -41,7 +41,7 @@ describe('shell ops', () => {
     const evil = 'x"; rm -rf /; #'
     fs.addFile(evil, 'x\n')
     const requests: { command: string; env?: Record<string, string> }[] = []
-    const shell = { resolve: (r: unknown) => r, run: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return result(0) } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return { result: async () => result(0) } } }
     const tool = makeShellTool(fs, shell)
     const patch = `*** Begin Patch\n*** Delete File: ${evil}\n*** End Patch\n`
     await tool.execute({ patch }, shellExec())
@@ -54,7 +54,7 @@ describe('shell ops', () => {
     const evil = 'a`id`b$(whoami)c'
     fs.addFile(evil, 'x\n')
     const requests: { command: string; env?: Record<string, string> }[] = []
-    const shell = { resolve: (r: unknown) => r, run: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return result(0) } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return { result: async () => result(0) } } }
     const tool = makeShellTool(fs, shell)
     await tool.execute({ patch: `*** Begin Patch\n*** Delete File: ${evil}\n*** End Patch\n` }, shellExec())
     expect(requests[0].command).toBe(process.platform === 'win32' ? PWSH_REMOVE : POSIX_REMOVE)
@@ -64,7 +64,7 @@ describe('shell ops', () => {
   it('a sandbox denial reports policy rejection, not command failure', async () => {
     const fs = new MemoryFs()
     fs.addFile('gone.txt', 'x\n')
-    const shell = { resolve: (r: unknown) => r, run: async () => result(1, { sandbox: { mode: 'workspace-write', denied: true } }) }
+    const shell = { resolve: (r: unknown) => r, execute: async () => ({ result: async () => result(1, { sandbox: { mode: 'workspace-write', denied: true } }) }) }
     const tool = makeShellTool(fs, shell)
     try {
       await tool.execute({ patch: DELETE_PATCH }, shellExec())
@@ -79,7 +79,7 @@ describe('shell ops', () => {
   it('a plain nonzero exit reports command failure', async () => {
     const fs = new MemoryFs()
     fs.addFile('gone.txt', 'x\n')
-    const shell = { resolve: (r: unknown) => r, run: async () => result(1) }
+    const shell = { resolve: (r: unknown) => r, execute: async () => ({ result: async () => result(1) }) }
     const tool = makeShellTool(fs, shell)
     try {
       await tool.execute({ patch: DELETE_PATCH }, shellExec())
@@ -104,7 +104,7 @@ describe('shell ops', () => {
   it('deleteBackend: none rejects delete/move with a structured error and keeps other ops working', async () => {
     const fs = new MemoryFs()
     fs.addFile('gone.txt', 'x\n')
-    const shell = { resolve: (r: unknown) => r, run: async () => result(0) }
+    const shell = { resolve: (r: unknown) => r, execute: async () => ({ result: async () => result(0) }) }
     const { resolveConfig } = await import('../src/config.js')
     const noneCfg = { ...resolveConfig({ deleteBackend: 'none', allowCodexPatch: true }) }
     const noneTool = buildApplyPatchTool('apply_patch', { fs, waterfall: async (_e: string, _t: unknown, _x: unknown, next: () => unknown) => next(), emit: () => {}, shell } as never, noneCfg)
@@ -126,7 +126,7 @@ describe('shell ops', () => {
     const fs = new MemoryFs()
     fs.addFile('gone.txt', 'x\n')
     const requests: { command: string; env?: Record<string, string> }[] = []
-    const shell = { resolve: (r: unknown) => r, run: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return result(0) } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: { command: string; env?: Record<string, string> }) => { requests.push(r); return { result: async () => result(0) } } }
     const custom = { ...cfg(), deleteCommand: 'myrm "$DSH_PATCH_TARGET"' }
     const tool = buildApplyPatchTool('apply_patch', { fs, waterfall: async (_e: string, _t: unknown, _x: unknown, next: () => unknown) => next(), emit: () => {}, shell } as never, custom)
     await tool.execute({ patch: DELETE_PATCH }, shellExec())
@@ -138,7 +138,7 @@ describe('shell ops', () => {
     const fs = new MemoryFs()
     fs.addFile('gone.txt', 'x\n')
     const requests: Record<string, unknown>[] = []
-    const shell = { resolve: (r: unknown) => r, run: async (r: Record<string, unknown>) => { requests.push(r); return result(0) } }
+    const shell = { resolve: (r: unknown) => r, execute: async (r: Record<string, unknown>) => { requests.push(r); return { result: async () => result(0) } } }
     const tool = makeShellTool(fs, shell)
     await tool.execute({ patch: DELETE_PATCH }, shellExec())
     expect('sandboxPolicy' in requests[0]).toBe(true)

@@ -6,11 +6,11 @@
 
 | DSH バージョン | ステータス | 備考 |
 |---|---|---|
-| `0.1.2-rc.1` | ✅ サポート対象 | ツールオーサリング契約（`defineTool` DSL、presentation intents）は 0.1.2〜0.1.5 でバイト単位で同一であり、1 つのコードパスが両方を担います。 |
-| `0.1.3-alpha.x` | ✅ サポート対象 | 上記と同じ。 |
-| `0.1.5-rc.2` | ✅ 静的検証済み | `npm run typecheck:0.1.5` は実際の `0.1.5-rc.2` ピアパッケージに対して `src/` を型チェックします。`readByteRange` の使用はなく、0.1.5 専用の PTC 識別子もありません。 |
+| `0.2.0-rc.1+` | ✅ サポート対象（本ライン、v0.3.0+） | 宣言的設定：`allowCodexPatch` は `.volatile()` 付きで、設定フォームは自動生成され、`loader/volatile-update` が再マウントなしでツールをその場で再登録します。登録呼び出しは不要。Delete/Move は `ShellExecutor.execute()` + `result()` フォアグラウンド API に移行済み。 |
+| `0.1.7-rc.1+` | ↗ メンテナンスライン | `compat/0.1.7` ブランチ / `dsh-0.1.7` dist-tag が担当（同ラインの v0.2.1）。0.2.0 より前にシェル実行器の `run` が `execute` に改名されており（0.1.2 → 0.1.7 の間）、1 つのコードベースで両ラインを型安全に支えることはできません。 |
+| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ メンテナンスライン | 0.1.7 以前のブランチ / `dsh-0.1.5` dist-tag が担当。0.1.7 はデュアル API フォールバックが依存する命令型登録 API を削除しました。 |
 
-設定の登録はデュアル API フォールバック（0.1.2 以降では `settings.installSection`、旧ホストでは `settings.register`）を使用します。
+本ラインの設定は宣言的です：`Config` 内で `.volatile()` を付けたフィールドがそのまま設定フォームになり、プラグインは登録フックの代わりに `loader/volatile-update` を購読します。
 
 ## そもそもなぜパッチなのか？（ツールルーティングガイド）
 
@@ -109,9 +109,9 @@ dsh web --dump-config   # verify the plugin row appears
 
 ```bash
 npm install
-npm run typecheck        # against 0.1.2-rc.1 peers (devDependencies)
-npm run typecheck:0.1.5  # against 0.1.5-rc.2 peers (static dual-version proof)
-npm test                 # vitest, 90 tests
+npm run typecheck        # against 0.2.0-rc.1 peers (devDependencies)
+npm run typecheck:0.2.0  # against real 0.2.0-rc.1 peer packages installed from the registry (dual-baseline proof)
+npm test                 # vitest, 92 tests
 npm run lint
 npm run build            # lib/
 npm run verify:source    # static safety assertions (intent dance, no node:fs, …)
