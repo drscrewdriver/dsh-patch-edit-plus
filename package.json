@@ -1,6 +1,6 @@
 {
   "name": "dsh-patch-edit-plus",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff and Codex apply_patch syntax (both enabled by default), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, with a DSH 0.1.7+ line (declarative volatile settings).",
   "type": "module",
   "repository": {

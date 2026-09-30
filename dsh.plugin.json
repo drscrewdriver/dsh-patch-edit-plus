@@ -1,7 +1,7 @@
 {
   "id": "dsh-patch-edit-plus",
   "name": "dsh-patch-edit-plus",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": {
     "en": "Patch-style file editing: one apply_patch tool for git/unified diff and Codex apply_patch syntax (both enabled by default), with all-or-nothing application and sandbox-aware delete/move.",
     "zh": "补丁风格文件编辑：单个 apply_patch 工具，接受 git/unified diff 与 Codex apply_patch 语法（两种语法均默认开启），全量验证后原子应用，删除/移动走沙箱感知 shell。"

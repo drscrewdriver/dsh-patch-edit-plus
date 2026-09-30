@@ -1,6 +1,14 @@
 # 변경 이력
 
 
+
+## [0.2.5] — 2026-10-01
+
+### 수정
+- **헤더 없는 다중 파일 unified diff가 하나의 파일 section으로 뭉개졌음.** 파서는 section이 존재하지 않을 때만 `--- `에서 새 section을 열었고, 두 번째 파일의 `--- `/`+++ ` 헤더가 이전 section의 경로를 덮어써 이전 파일의 hunk가 잘못된 파일 내용과 대조되어 첫 파일 이후 모든 section이 `Hunk N of "..." does not apply: the context does not match the file`로 실패했습니다(파일별 분할 호출이 유일한 회피책). 이제 현재 section이 경로나 hunk로 점유된 상태면 `--- `가 새 section을 엽니다. `diff --git` 구분 diff는 영향 없음. 파서 수준과 엔드투엔드 회귀 테스트 추가.
+
+### 변경
+- 없음
 ## [0.2.4] — 2026-10-01
 
 ### 변경

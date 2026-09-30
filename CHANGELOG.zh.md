@@ -1,6 +1,14 @@
 # 更新日志
 
 
+
+## [0.2.5] — 2026-10-01
+
+### 修复
+- **裸多文件 unified diff 被折叠进同一个文件 section。** 解析器只在"当前无 section"时才在 `--- ` 处开新 section；第二个文件的 `--- `/`+++ ` 头因此直接改写了前一个 section 的路径，前一个文件的 hunk 被拿到错误文件的内容上匹配，第一个文件之后的每个 section 都报 `Hunk N of "..." does not apply: the context does not match the file`（此前只能逐文件调用绕过）。现在只要当前 section 已被路径或 hunk 认领，`--- ` 就开新 section；带 `diff --git` 分隔的 diff 不受影响（其 `--- ` 总是紧跟新 section）。解析层与端到端双层回归测试（双文件裸补丁）。
+
+### 变更
+- 无
 ## [0.2.4] — 2026-10-01
 
 ### 变更

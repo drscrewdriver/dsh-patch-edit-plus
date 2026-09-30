@@ -1,6 +1,14 @@
 # Changelog
 
 
+
+## [0.2.5] — 2026-10-01
+
+### Fixed
+- **A bare multi-file unified diff collapsed into one file section.** The parser only opened a new file section at `--- ` when no section existed; the second file's `--- `/`+++ ` headers therefore REWROTE the previous section's paths and its hunks were matched against the wrong file's content, failing every section after the first with `Hunk N of "..." does not apply: the context does not match the file` (one-call-per-file was the only workaround). `--- ` now opens a new section whenever the current one has already been claimed by a path or a hunk; `diff --git`-delimited diffs are unaffected (their `--- ` always follows a fresh section). Regression-tested at the parser level and end-to-end with a two-file bare patch.
+
+### Changed
+- none
 ## [0.2.4] — 2026-10-01
 
 ### Changed
