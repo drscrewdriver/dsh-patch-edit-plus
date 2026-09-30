@@ -1,5 +1,13 @@
 # Changelog
 
+
+## [0.1.3] — 2026-10-01
+
+### Fixed
+- **Publish the peer/engines cap that npm's 0.1.2 predates**: npm's `0.1.2` tarball was cut before `3eb16c0`, so it still declared `dsh: >=0.1.2-rc.1 <0.2.0-0` — a range reaching into host segments this line never ran on. The cap is now `>=0.1.2-rc.1 <0.1.3-0` (package.json engines) and `>=0.1.2-rc.1 <0.1.3-0` (dsh.plugin.json), matching the segment this branch serves. No code changes.
+
+### Changed
+- `publishConfig.tag` added: `dsh-0.1.2` — explicit dist-tag per the family publishing discipline.
 ## [0.1.2] — 2026-09-19
 
 ### Fixed
