@@ -81,7 +81,7 @@ describe('tool name conflict handling', () => {
     expect(cfg.toolName).toBe('apply_patch')
     expect(cfg.conflictPolicy).toBe('rename')
     expect(cfg.allowUnifiedDiff).toBe(true)
-    expect(cfg.allowCodexPatch).toBe(false)
+    expect(cfg.allowCodexPatch).toBe(true)
     expect(cfg.deleteBackend).toBe('shell')
     expect(cfg.followSymlinks).toBe(false)
   })

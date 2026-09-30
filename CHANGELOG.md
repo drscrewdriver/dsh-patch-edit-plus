@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [0.2.4] — 2026-10-01
+
+### Changed
+- **Both patch syntaxes are now enabled by default**: `allowCodexPatch` default `false` → `true`, so the tool accepts git/unified diff and Codex `apply_patch` out of the box. The inserted `cordis.patch.yml` row now carries the config itself (`allowUnifiedDiff: true` + `allowCodexPatch: true`) — configuration ships through the patch layer instead of leaning on the settings panel. Set `allowCodexPatch: false` to restore unified-diff-only; the `.volatile()` settings projection is unchanged, so an explicit toggle still takes effect without a restart. The actionable UNSUPPORTED hint is unchanged for the explicit-opt-out case.
+- Smoke reworked for the new default: default-on apply, explicit `true` + dryRun, explicit `false` deny, and an assertion that the inserted patch row ships both modes enabled.
 ## [0.2.3] — 2026-09-29
 
 ### Fixed

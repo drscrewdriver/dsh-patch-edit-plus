@@ -1,12 +1,12 @@
 # dsh-patch-edit-plus
 
-Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness): one model-facing `apply_patch` tool that accepts **git/unified diff** (default) and **Codex `apply_patch` syntax** (opt-in), applies every change **all-or-nothing**, and stays completely out of DSH's way.
+Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness): one model-facing `apply_patch` tool that accepts **git/unified diff** and **Codex `apply_patch` syntax** (both enabled by default), applies every change **all-or-nothing**, and stays completely out of DSH's way.
 
 ## DSH version compatibility
 
 | DSH version | Status | Notes |
 |---|---|---|
-| `0.1.7-rc.1+` | ✅ supported (this line, v0.2.1+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. v0.2.3 fixes Delete/Move: the shell `run()` duck-detect never matched real 0.1.7 hosts (`run` was renamed `execute` between 0.1.2 and 0.1.7), silently degrading them to UNSUPPORTED; now uses `execute()` + `result()`. |
+| `0.1.7-rc.1+` | ✅ supported (this line, v0.2.1+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. v0.2.3 fixes Delete/Move: the shell `run()` duck-detect never matched real 0.1.7 hosts (`run` was renamed `execute` between 0.1.2 and 0.1.7), silently degrading them to UNSUPPORTED; now uses `execute()` + `result()`. v0.2.4: `allowCodexPatch` defaults to `true` — both syntaxes on out of the box; the config ships on the inserted `cordis.patch.yml` row. |
 | `0.1.2-rc.1` ~ `0.1.4` | ↗ maintenance line | Served by the published `0.1.2` (main branch). |
 | `0.1.5-rc.x` | ↗ maintenance line | Served by the `dsh-0.1.5` dist-tag (v0.2.2+). |
 | `0.2.0-rc.1+` | ↗ next line | Served by the `dsh-0.2.0` dist-tag (v0.3.0+). |
@@ -45,7 +45,7 @@ dsh web --dump-config   # verify the plugin row appears
  }
 ```
 
-### Codex apply_patch syntax (opt-in)
+### Codex apply_patch syntax (on by default)
 
 ```text
 *** Begin Patch
@@ -61,7 +61,7 @@ dsh web --dump-config   # verify the plugin row appears
 *** End Patch
 ```
 
-Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, the tool returns an **actionable hint** (how to enable or how to retry in unified diff) instead of a generic parse error — Codex syntax is a strong prior for GPT-family models and a silent failure traps them in retry loops.
+Both syntaxes ship enabled: the defaults live in the `Config` schema and the inserted `cordis.patch.yml` row carries `allowUnifiedDiff: true` + `allowCodexPatch: true`. Set `allowCodexPatch: false` to go unified-diff-only. When a Codex patch arrives while explicitly disabled, the tool returns an **actionable hint** (how to enable or how to retry in unified diff) instead of a generic parse error — Codex syntax is a strong prior for GPT-family models and a silent failure traps them in retry loops.
 
 ### Operations
 
@@ -88,7 +88,7 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 | `conflictPolicy` | `rename` | `rename` / `skip` / `fail` when the tool name is taken. |
 | `renameSuffix` | `_1` | Suffix used by rename avoidance. |
 | `allowUnifiedDiff` | `true` | Accept git/unified diffs. |
-| `allowCodexPatch` | `false` | Accept Codex `apply_patch` syntax. Also editable in the DSH settings panel; changes take effect immediately, no restart needed. |
+| `allowCodexPatch` | `true` | Accept Codex `apply_patch` syntax (set `false` for unified-diff-only). Also editable in the DSH settings panel; changes take effect immediately, no restart needed. |
 | `deleteBackend` | `shell` | `shell` or `none` (Delete/Move return a structured error). |
 | `shellDialect` | `auto` | `auto` (pwsh on win32) / `posix` / `pwsh`. |
 | `deleteCommand` / `moveCommand` | built-in | Custom command templates. Paths still arrive **only via env** (`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`); never interpolate them into the command string. |

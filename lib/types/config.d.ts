@@ -23,7 +23,9 @@ export interface Config {
     renameSuffix?: string;
     /** Accept git/unified diff patches. Defaults to true. */
     allowUnifiedDiff?: boolean;
-    /** Accept Codex `apply_patch` syntax. Defaults to false.
+    /** Accept Codex `apply_patch` syntax. Defaults to true (both syntaxes on;
+     * the patch-layer row in `cordis.patch.yml` carries the same default). Set
+     * false to restore unified-diff-only.
      * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
      * field — always read it through `readVolatileBoolean`, never cache the ref. */
     allowCodexPatch?: boolean | Volatile<boolean>;

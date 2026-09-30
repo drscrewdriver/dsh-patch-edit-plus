@@ -1,6 +1,14 @@
 # Assembly layer for the dsh profiles whose bundles list includes this package.
 # A pure addition: one insert row with an id no shipped entry uses. No shipped
 # row is disabled, renamed, or reconfigured here.
+#
+# Config rides the inserted row: both patch syntaxes ship enabled. The DSH
+# settings panel still projects the volatile `allowCodexPatch` from this row,
+# so a user toggle keeps working without touching this file. Every knob left
+# out of the row resolves to its schema default computed in lib/index.js.
 - insert:
     - id: dsh-patch-edit-plus
       name: dsh-patch-edit-plus
+      config:
+        allowUnifiedDiff: true
+        allowCodexPatch: true

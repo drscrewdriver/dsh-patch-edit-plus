@@ -1,12 +1,12 @@
 # dsh-patch-edit-plus
 
-面向 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 的补丁风格文件编辑插件：只提供 **1 个**模型可见工具 `apply_patch`，接受 **git/unified diff**（默认开启）与 **Codex `apply_patch` 语法**（可选开启），全量验证后**原子应用**，对 DSH 既有功能零负面影响。
+面向 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 的补丁风格文件编辑插件：只提供 **1 个**模型可见工具 `apply_patch`，接受 **git/unified diff** 与 **Codex `apply_patch` 语法**（两种语法均默认开启），全量验证后**原子应用**，对 DSH 既有功能零负面影响。
 
 ## DSH 版本适配矩阵
 
 | DSH 版本 | 状态 | 说明 |
 |---|---|---|
-| `0.1.7-rc.1+` | ✅ 支持（本线，v0.2.1+） | 声明式设置：`allowCodexPatch` 标记 `.volatile()`——设置表单自动生成，`loader/volatile-update` 驱动工具原位重注册（不 remount）。v0.2.3 修复 Delete/Move：shell 鸭子探测查 `run()` 在真实 0.1.7 宿主永不命中（`run` 在 0.1.2→0.1.7 间改名为 `execute`），Delete/Move 被静默降级为 UNSUPPORTED；现改用 `execute()` + `result()`。 |
+| `0.1.7-rc.1+` | ✅ 支持（本线，v0.2.1+） | 声明式设置：`allowCodexPatch` 标记 `.volatile()`——设置表单自动生成，`loader/volatile-update` 驱动工具原位重注册（不 remount）。v0.2.3 修复 Delete/Move：shell 鸭子探测查 `run()` 在真实 0.1.7 宿主永不命中（`run` 在 0.1.2→0.1.7 间改名为 `execute`），Delete/Move 被静默降级为 UNSUPPORTED；现改用 `execute()` + `result()`。v0.2.4：`allowCodexPatch` 默认改为 `true`——两种语法开箱即用；配置随插入的 `cordis.patch.yml` 行下发。 |
 | `0.1.2-rc.1` ~ `0.1.4` | ↗ 维护线 | 由已发布的 `0.1.2`（main 分支）服务。 |
 | `0.1.5-rc.x` | ↗ 维护线 | 由 `dsh-0.1.5` dist-tag（v0.2.2+）服务。 |
 | `0.2.0-rc.1+` | ↗ 下一线 | 由 `dsh-0.2.0` dist-tag（v0.3.0+）服务。 |
@@ -45,7 +45,7 @@ dsh web --dump-config   # 确认插件行出现
  }
 ```
 
-### Codex apply_patch 语法（需开启）
+### Codex apply_patch 语法（默认开启）
 
 ```text
 *** Begin Patch
@@ -60,7 +60,7 @@ dsh web --dump-config   # 确认插件行出现
 *** End Patch
 ```
 
-在配置中设 `allowCodexPatch: true` 开启。关闭状态下收到 Codex 补丁时，工具返回**可操作提示**（如何开启、或改用 unified diff），而不是泛化的解析错误 —— Codex 语法是 GPT 系模型的强先验，沉默失败会让模型陷入重试循环。
+两种语法默认全部开启：默认值由 `Config` schema 给出，插入的 `cordis.patch.yml` 行同样携带 `allowUnifiedDiff: true` + `allowCodexPatch: true`。设 `allowCodexPatch: false` 可退回仅 unified diff。显式关闭后收到 Codex 补丁时，工具返回**可操作提示**（如何开启、或改用 unified diff），而不是泛化的解析错误 —— Codex 语法是 GPT 系模型的强先验，沉默失败会让模型陷入重试循环。
 
 ### 四类操作
 
@@ -87,7 +87,7 @@ dsh web --dump-config   # 确认插件行出现
 | `conflictPolicy` | `rename` | 重名时 `rename` / `skip` / `fail`。 |
 | `renameSuffix` | `_1` | 改名避让使用的后缀。 |
 | `allowUnifiedDiff` | `true` | 接受 git/unified diff。 |
-| `allowCodexPatch` | `false` | 接受 Codex `apply_patch` 语法。也可在 DSH 设置面板中修改，改动立即生效、无需重启。 |
+| `allowCodexPatch` | `true` | 接受 Codex `apply_patch` 语法（设 `false` 退回仅 unified diff）。也可在 DSH 设置面板中修改，改动立即生效、无需重启。 |
 | `deleteBackend` | `shell` | `shell` 或 `none`（Delete/Move 返回结构化错误）。 |
 | `shellDialect` | `auto` | `auto`（win32 上 pwsh）/ `posix` / `pwsh`。 |
 | `deleteCommand` / `moveCommand` | 内置 | 自定义命令模板。路径仍然**只经 env** 传入（`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`），请勿把路径插值进命令串。 |

@@ -1,12 +1,12 @@
 # dsh-patch-edit-plus
 
-[DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness)를 위한 패치 스타일 파일 편집 도구입니다. 모델에 노출되는 단일 `apply_patch` 도구가 **git/unified diff**(기본)와 **Codex `apply_patch` 문법**(옵트인)을 받아들이고, 모든 변경을 **전부 아니면 전무(all-or-nothing)** 방식으로 적용하며, DSH의 동작에는 전혀 간섭하지 않습니다.
+[DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness)를 위한 패치 스타일 파일 편집 도구입니다. 모델에 노출되는 단일 `apply_patch` 도구가 **git/unified diff**와 **Codex `apply_patch` 문법**(둘 다 기본 활성화)을 받아들이고, 모든 변경을 **전부 아니면 전무(all-or-nothing)** 방식으로 적용하며, DSH의 동작에는 전혀 간섭하지 않습니다.
 
 ## DSH 버전 호환성
 
 | DSH 버전 | 상태 | 비고 |
 |---|---|---|
-| `0.1.7-rc.1+` | ✅ 지원됨(본 라인, v0.2.1+) | 선언적 설정: `allowCodexPatch`에 `.volatile()` 마크 — 설정 폼이 자동 생성되고, `loader/volatile-update`가 remount 없이 도구를 그 자리에서 재등록합니다. v0.2.3은 Delete/Move를 수정: shell 덕 타이핑 감지가 `run()`을 보았으나 실 0.1.7 호스트에서는 결코 일치하지 않았고(`run`은 0.1.2→0.1.7 사이에 `execute`로 개명), Delete/Move가 UNSUPPORTED로 조용히 강등되었습니다. 이제 `execute()` + `result()` 사용. |
+| `0.1.7-rc.1+` | ✅ 지원됨(본 라인, v0.2.1+) | 선언적 설정: `allowCodexPatch`에 `.volatile()` 마크 — 설정 폼이 자동 생성되고, `loader/volatile-update`가 remount 없이 도구를 그 자리에서 재등록합니다. v0.2.3은 Delete/Move를 수정: shell 덕 타이핑 감지가 `run()`을 보았으나 실 0.1.7 호스트에서는 결코 일치하지 않았고(`run`은 0.1.2→0.1.7 사이에 `execute`로 개명), Delete/Move가 UNSUPPORTED로 조용히 강등되었습니다. 이제 `execute()` + `result()` 사용. v0.2.4: `allowCodexPatch` 기본값이 `true`로 — 두 문법 모두 초기 상태에서 활성화; 설정은 삽입되는 `cordis.patch.yml` 행을 통해 배포. |
 | `0.1.2-rc.1` ~ `0.1.4` | ↗ 유지보수 라인 | 게시된 `0.1.2`(main 브랜치)가 담당합니다. |
 | `0.1.5-rc.x` | ↗ 유지보수 라인 | `dsh-0.1.5` dist-tag(v0.2.2+)가 담당합니다. |
 | `0.2.0-rc.1+` | ↗ 다음 라인 | `dsh-0.2.0` dist-tag(v0.3.0+)가 담당합니다. |
@@ -45,7 +45,7 @@ dsh web --dump-config   # verify the plugin row appears
  }
 ```
 
-### Codex apply_patch 문법 (옵트인)
+### Codex apply_patch 문법 (기본 활성화)
 
 ```text
 *** Begin Patch
@@ -61,7 +61,7 @@ dsh web --dump-config   # verify the plugin row appears
 *** End Patch
 ```
 
-`allowCodexPatch: true`로 활성화합니다. 비활성 상태에서 Codex 패치가 들어오면 도구는 일반적인 파싱 오류 대신 **실행 가능한 힌트**(활성화 방법, 또는 unified diff로 재시도하는 방법)를 반환합니다. Codex 문법은 GPT 계열 모델에게 강한 사전 확률(prior)이며, 조용한 실패는 모델을 재시도 루프에 가두기 때문입니다.
+두 문법 모두 기본 활성화되어 있습니다. 기본값은 `Config` 스키마가 가지며, 삽입되는 `cordis.patch.yml` 행도 `allowUnifiedDiff: true` + `allowCodexPatch: true`를 운반합니다. `allowCodexPatch: false`로 unified diff 전용으로 되돌릴 수 있습니다. 명시적으로 비활성화된 상태에서 Codex 패치가 들어오면 도구는 일반적인 파싱 오류 대신 **실행 가능한 힌트**(활성화 방법, 또는 unified diff로 재시도하는 방법)를 반환합니다. Codex 문법은 GPT 계열 모델에게 강한 사전 확률(prior)이며, 조용한 실패는 모델을 재시도 루프에 가두기 때문입니다.
 
 ### 연산
 
@@ -88,7 +88,7 @@ dsh web --dump-config   # verify the plugin row appears
 | `conflictPolicy` | `rename` | 도구 이름이 이미 사용 중일 때의 동작으로, `rename` / `skip` / `fail` 중 하나입니다. |
 | `renameSuffix` | `_1` | 이름 회피에 사용되는 접미사입니다. |
 | `allowUnifiedDiff` | `true` | git/unified diff를 허용합니다. |
-| `allowCodexPatch` | `false` | Codex `apply_patch` 문법을 허용합니다. DSH 설정 패널에서도 변경할 수 있으며, 변경은 즉시 적용됩니다(재시작 불필요). |
+| `allowCodexPatch` | `true` | Codex `apply_patch` 문법을 허용합니다(`false`로 unified diff 전용). DSH 설정 패널에서도 변경할 수 있으며, 변경은 즉시 적용됩니다(재시작 불필요). |
 | `deleteBackend` | `shell` | `shell` 또는 `none`(`none`이면 삭제/이동이 구조화된 오류를 반환합니다). |
 | `shellDialect` | `auto` | `auto`(win32에서는 pwsh) / `posix` / `pwsh` 중 하나입니다. |
 | `deleteCommand` / `moveCommand` | 내장 | 사용자 지정 명령 템플릿입니다. 경로는 여전히 **환경 변수로만**(`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`) 전달되며, 명령 문자열에 끼워 넣어서는 안 됩니다. |

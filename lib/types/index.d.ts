@@ -1,8 +1,9 @@
 /**
  * dsh-patch-edit-plus — patch-style file editing for DeepSeek Harness.
  *
- * One `apply_patch` tool accepting git/unified diff (default) and Codex
- * `apply_patch` syntax (opt-in). All-or-nothing application through the
+ * One `apply_patch` tool accepting git/unified diff and Codex `apply_patch`
+ * syntax (both on by default; the patch-layer row in `cordis.patch.yml` ships
+ * the same defaults). All-or-nothing application through the
  * official fs write-intent dance; delete/move through the sandbox-aware
  * shell. Targets DSH 0.1.7+: settings are declarative — the fields marked
  * `.volatile()` in `Config` render the settings form automatically (no

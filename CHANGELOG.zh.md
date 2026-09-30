@@ -1,5 +1,11 @@
 # 更新日志
 
+
+## [0.2.4] — 2026-10-01
+
+### 变更
+- **两种补丁语法默认全部开启**：`allowCodexPatch` 默认值 `false` → `true`，工具开箱即接受 git/unified diff 与 Codex `apply_patch`。插入的 `cordis.patch.yml` 行现在自带配置（`allowUnifiedDiff: true` + `allowCodexPatch: true`）——配置随 patch 层下发，不再依赖设置面板。设 `allowCodexPatch: false` 可退回仅 unified diff；`.volatile()` 设置投影不变，显式开关依旧即时生效、无需重启。显式关闭时的可操作 UNSUPPORTED 提示保持不变。
+- Smoke 按新默认重写：默认开启直接应用、显式 `true` + dryRun、显式 `false` 拒绝，并断言插入的 patch 行携带两种模式开启。
 ## [0.2.3] — 2026-09-29
 
 ### 修复

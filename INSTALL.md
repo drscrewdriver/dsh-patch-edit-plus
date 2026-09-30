@@ -25,7 +25,7 @@ The placeholders in this guide are:
 >
 > | DSH version | Status | Notes |
 > | --- | --- | --- |
-> | `0.1.7-rc.1+` | supported | This line (v0.2.1+): declarative `.volatile()` settings; v0.2.3 fixes Delete/Move via the shell `execute()` API. |
+> | `0.1.7-rc.1+` | supported | This line (v0.2.1+): declarative `.volatile()` settings; v0.2.3 fixes Delete/Move via the shell `execute()` API; v0.2.4 enables both patch syntaxes by default. |
 > | `0.1.2-rc.1` ~ `0.1.4` | not served here | Use the published `0.1.2` (main branch). |
 > | `0.1.5-rc.x` | not served here | Served by the `dsh-0.1.5` dist-tag (v0.2.2+). |
 > | `0.2.0+` | not served here | Served by the `dsh-0.2.0` dist-tag (v0.3.0+). |

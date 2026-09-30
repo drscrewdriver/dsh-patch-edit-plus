@@ -1,5 +1,11 @@
 # 変更履歴
 
+
+## [0.2.4] — 2026-10-01
+
+### 変更
+- **両構文が既定で有効に**：`allowCodexPatch` の既定値を `false` → `true` に変更。ツールは git/unified diff と Codex `apply_patch` を初期状態のまま受け付けます。挿入される `cordis.patch.yml` 行が設定自体を運び（`allowUnifiedDiff: true` + `allowCodexPatch: true`）、設定は設定パネルではなく patch レイヤー経由で配布されます。`allowCodexPatch: false` で unified diff 専用に戻せます；`.volatile()` の設定投影は変わらず、明示的な切替は再起動なしで即時反映されます。明示的なオプトアウト時の実行可能 UNSUPPORTED ヒントも不変。
+- Smoke を新既定に合わせて改修：既定オン適用、明示 `true` + dryRun、明示 `false` 拒否、および patch 行が両モード有効を運ぶことのアサーション。
 ## [0.2.3] — 2026-09-29
 
 ### 修正

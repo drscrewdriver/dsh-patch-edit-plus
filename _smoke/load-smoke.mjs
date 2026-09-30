@@ -9,8 +9,8 @@
  * 3. the tool executes end-to-end against a memory fs (unified + codex + dryRun);
  * 4. the only runtime externals of lib/index.js are the declared peers plus
  *    schemastery (host half — no client bundle, so no module-table requests);
- * 5. the assembly manifest (dsh.plugin.json + cordis.patch.yml) is present and
- *    the patch is a pure insert.
+ * 5. the assembly manifest (dsh.plugin.json + cordis.patch.yml) is present,
+ *    a pure insert, and ships both syntax modes enabled on the inserted row.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -151,28 +151,38 @@ try {
 
 try {
   const tool = registered.get('apply_patch')
-  // Default: Codex style OFF — must return the actionable UNSUPPORTED hint.
-  try {
-    await tool.execute({ patch: '*** Begin Patch\n*** Add File: src/n.txt\n+hi\n*** End Patch\n' }, exec)
-    throw new Error('codex patch unexpectedly applied while the style is disabled')
-  } catch (error) {
-    if (error?.code !== 'UNSUPPORTED' || !String(error.message).includes('allowCodexPatch')) throw error
-  }
-  ok('codex style disabled by default with the actionable hint')
-} catch (error) { bad('codex default-deny', error) }
+  // Default: Codex style ON — a codex patch applies with no explicit config.
+  await tool.execute({ patch: '*** Begin Patch\n*** Add File: src/n.txt\n+hi\n*** End Patch\n' }, exec)
+  if (files.get('/work/src/n.txt') !== 'hi\n') throw new Error('codex add failed under default config')
+  ok('codex style applies by default (both syntaxes on)')
+} catch (error) { bad('codex default-on', error) }
 
 try {
   disposers.splice(0).forEach(d => d())
   registered.clear()
   apply(ctx, { allowCodexPatch: true })
   const tool = registered.get('apply_patch')
-  await tool.execute({ patch: '*** Begin Patch\n*** Add File: src/n.txt\n+hi\n*** End Patch\n' }, exec)
-  if (files.get('/work/src/n.txt') !== 'hi\n') throw new Error('codex add failed')
   const before = files.get('/work/a.txt')
   const dry = await tool.execute({ patch: '--- a/a.txt\n+++ b/a.txt\n@@ -1,1 +1,1 @@\n-X\n+Z\n', dryRun: true }, exec)
   if (dry.applied !== false || files.get('/work/a.txt') !== before) throw new Error('dryRun wrote to disk')
-  ok('codex style applies when enabled; dryRun writes nothing')
+  ok('explicit allowCodexPatch: true registers; dryRun writes nothing')
 } catch (error) { bad('codex/dryRun end-to-end', error) }
+
+try {
+  disposers.splice(0).forEach(d => d())
+  registered.clear()
+  apply(ctx, { allowCodexPatch: false })
+  const tool = registered.get('apply_patch')
+  // Explicit opt-out — must return the actionable UNSUPPORTED hint.
+  try {
+    await tool.execute({ patch: '*** Begin Patch\n*** Add File: src/m.txt\n+hi\n*** End Patch\n' }, exec)
+    throw new Error('codex patch unexpectedly applied while the style is disabled')
+  } catch (error) {
+    if (error?.code !== 'UNSUPPORTED' || !String(error.message).includes('allowCodexPatch')) throw error
+  }
+  if (files.has('/work/src/m.txt')) throw new Error('disabled codex patch still wrote to disk')
+  ok('explicit allowCodexPatch: false denies codex with the actionable hint')
+} catch (error) { bad('codex explicit-deny', error) }
 
 try {
   disposers.splice(0).forEach(d => d())
@@ -216,7 +226,10 @@ try {
   const code = patch.split('\n').filter(line => !line.trim().startsWith('#')).join('\n')
   if (!/^\s*-\s*insert:/m.test(code)) throw new Error('cordis.patch.yml has no insert block')
   if (/disabled:\s|replaced:|\brename\b/.test(code)) throw new Error('cordis.patch.yml is not a pure insert')
-  ok('assembly manifest present; cordis.patch.yml is a pure insert')
+  if (!/allowUnifiedDiff:\s*true/.test(code) || !/allowCodexPatch:\s*true/.test(code)) {
+    throw new Error('inserted patch row does not ship both syntax modes enabled')
+  }
+  ok('assembly manifest present; pure insert row ships both syntax modes enabled')
 } catch (error) { bad('assembly manifest', error) }
 
 console.log(failures === 0 ? 'SMOKE PASS' : 'SMOKE FAIL')

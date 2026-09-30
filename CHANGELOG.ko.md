@@ -1,5 +1,11 @@
 # 변경 이력
 
+
+## [0.2.4] — 2026-10-01
+
+### 변경
+- **두 문법 모두 기본 활성화**: `allowCodexPatch` 기본값 `false` → `true`. 도구가 초기 상태에서 git/unified diff와 Codex `apply_patch`를 모두 받아들입니다. 삽입되는 `cordis.patch.yml` 행이 설정 자체를 운반하고(`allowUnifiedDiff: true` + `allowCodexPatch: true`) 설정은 설정 패널이 아닌 patch 레이어를 통해 배포됩니다. `allowCodexPatch: false`로 unified diff 전용으로 되돌릴 수 있습니다; `.volatile()` 설정 프로젝션은 변하지 않아 명시적 토글은 여전히 재시작 없이 즉시 적용됩니다. 명시적 옵트아웃 시 실행 가능한 UNSUPPORTED 힌트도 동일.
+- Smoke를 새 기본값에 맞게 개편: 기본 온 적용, 명시적 `true` + dryRun, 명시적 `false` 거부, 그리고 patch 행이 두 모드 모두 활성화를 운반하는지 단언.
 ## [0.2.3] — 2026-09-29
 
 ### 수정
