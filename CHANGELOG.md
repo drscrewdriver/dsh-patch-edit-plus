@@ -1,6 +1,11 @@
 # Changelog
 
 
+
+## [0.1.4] — 2026-10-01
+
+### Fixed
+- **A bare multi-file unified diff collapsed into one file section** (ported from the 0.1.7 line, 0.2.5): without `diff --git` separators, the second file's `--- `/`+++ ` headers rewrote the previous section's paths and its hunks were matched against the wrong content, failing every section after the first. `--- ` now opens a new section whenever the current one is already claimed; parser-level and end-to-end regression tests added.
 ## [0.1.3] — 2026-10-01
 
 ### Fixed
