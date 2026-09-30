@@ -1,5 +1,7 @@
 # dsh-patch-edit-plus
 
+[English](./README.md) | [简体中文](./README.zh.md) | [日本語](./README.ja.md) | 한국어 | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Italiano](./README.it.md) | [Русский](./README.ru.md) | [Español](./README.es.md)
+
 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness)를 위한 패치 스타일 파일 편집 도구입니다. 모델에 노출되는 단일 `apply_patch` 도구가 **git/unified diff**(기본)와 **Codex `apply_patch` 문법**(옵트인)을 받아들이고, 모든 변경을 **전부 아니면 전무(all-or-nothing)** 방식으로 적용하며, DSH의 동작에는 전혀 간섭하지 않습니다.
 
 ## DSH 버전 호환성

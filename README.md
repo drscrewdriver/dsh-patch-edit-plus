@@ -1,5 +1,7 @@
 # dsh-patch-edit-plus
 
+English | [简体中文](./README.zh.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Italiano](./README.it.md) | [Русский](./README.ru.md) | [Español](./README.es.md)
+
 Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness): one model-facing `apply_patch` tool that accepts **git/unified diff** (default) and **Codex `apply_patch` syntax** (opt-in), applies every change **all-or-nothing**, and stays completely out of DSH's way.
 
 ## DSH version compatibility

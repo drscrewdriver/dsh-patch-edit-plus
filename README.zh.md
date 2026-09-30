@@ -1,5 +1,7 @@
 # dsh-patch-edit-plus
 
+[English](./README.md) | 简体中文 | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Italiano](./README.it.md) | [Русский](./README.ru.md) | [Español](./README.es.md)
+
 面向 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 的补丁风格文件编辑插件：只提供 **1 个**模型可见工具 `apply_patch`，接受 **git/unified diff**（默认开启）与 **Codex `apply_patch` 语法**（可选开启），全量验证后**原子应用**，对 DSH 既有功能零负面影响。
 
 ## DSH 版本适配矩阵
