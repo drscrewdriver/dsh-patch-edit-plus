@@ -39,6 +39,20 @@ describe('unified diff parser', () => {
     expect(parsed.ops[0].kind === 'update' && parsed.ops[0].hunks).toHaveLength(2)
   })
 
+  it('splits a bare multi-file unified diff at every --- header', () => {
+    const parsed = parseUnifiedDiff([
+      '--- a/one.txt', '+++ b/one.txt',
+      '@@ -1,1 +1,1 @@', '-alpha', '+ALPHA',
+      '--- a/two.txt', '+++ b/two.txt',
+      '@@ -1,1 +1,1 @@', '-beta', '+BETA',
+    ].join('\n'))
+    expect(parsed.ops).toHaveLength(2)
+    expect(parsed.ops[0]).toMatchObject({ kind: 'update', path: 'one.txt' })
+    expect(parsed.ops[1]).toMatchObject({ kind: 'update', path: 'two.txt' })
+    expect(parsed.ops[0].kind === 'update' && parsed.ops[0].hunks).toHaveLength(1)
+    expect(parsed.ops[1].kind === 'update' && parsed.ops[1].hunks).toHaveLength(1)
+  })
+
   it('parses a git new-file diff into an add op', () => {
     const parsed = parseUnifiedDiff([
       'diff --git a/new.txt b/new.txt',

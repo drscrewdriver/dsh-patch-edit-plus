@@ -19,6 +19,21 @@ describe('end-to-end operations', () => {
     expect(rig.fs.files.get('/work/a.txt')).toBe('first\nnew\ntail\n')
   })
 
+  it('applies a bare multi-file unified patch to every listed file', async () => {
+    const rig = makeRig(undefined, { 'one.txt': 'alpha\n', 'two.txt': 'beta\n' })
+    const patch = [
+      '--- a/one.txt', '+++ b/one.txt',
+      '@@ -1,1 +1,1 @@', '-alpha', '+ALPHA',
+      '--- a/two.txt', '+++ b/two.txt',
+      '@@ -1,1 +1,1 @@', '-beta', '+BETA',
+    ].join('\n')
+    const value = await rig.runTool(patch) as ApplyPatchResult
+    expect(value.applied).toBe(true)
+    expect(value.files).toHaveLength(2)
+    expect(rig.fs.files.get('/work/one.txt')).toBe('ALPHA\n')
+    expect(rig.fs.files.get('/work/two.txt')).toBe('BETA\n')
+  })
+
   it('applies a codex update when the style is enabled', async () => {
     const rig = makeRig({ allowCodexPatch: true }, { 'c.txt': 'keep\ngone\n' })
     const patch = ['*** Begin Patch', '*** Update File: c.txt', '@@', ' keep', '-gone', '+here', '*** End Patch'].join('\n')
