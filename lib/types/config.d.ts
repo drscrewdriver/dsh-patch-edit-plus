@@ -21,8 +21,10 @@ export interface Config {
     conflictPolicy?: ConflictPolicy;
     /** Suffix appended on rename avoidance. Defaults to `_1`. */
     renameSuffix?: string;
-    /** Accept git/unified diff patches. Defaults to true. */
-    allowUnifiedDiff?: boolean;
+    /** Accept git/unified diff patches. Defaults to true.
+     * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
+     * field — always read it through `readVolatileBoolean`, never cache the ref. */
+    allowUnifiedDiff?: boolean | Volatile<boolean>;
     /** Accept Codex `apply_patch` syntax. Defaults to false.
      * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
      * field — always read it through `readVolatileBoolean`, never cache the ref. */
@@ -51,9 +53,9 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     toolName: z<string, string, "defined">;
     conflictPolicy: z<"rename" | "skip" | "fail", "rename" | "skip" | "fail", "defined">;
     renameSuffix: z<string, string, "defined">;
-    allowUnifiedDiff: z<boolean, boolean, "defined">;
+    allowUnifiedDiff: z<boolean, boolean, "volatile-defined">;
     allowCodexPatch: z<boolean, boolean, "volatile-defined">;
-    deleteBackend: z<"shell" | "none", "shell" | "none", "defined">;
+    deleteBackend: z<"none" | "shell", "none" | "shell", "defined">;
     shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
     deleteCommand: z<string, string, "plain">;
     moveCommand: z<string, string, "plain">;
@@ -66,9 +68,9 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     toolName: z<string, string, "defined">;
     conflictPolicy: z<"rename" | "skip" | "fail", "rename" | "skip" | "fail", "defined">;
     renameSuffix: z<string, string, "defined">;
-    allowUnifiedDiff: z<boolean, boolean, "defined">;
+    allowUnifiedDiff: z<boolean, boolean, "volatile-defined">;
     allowCodexPatch: z<boolean, boolean, "volatile-defined">;
-    deleteBackend: z<"shell" | "none", "shell" | "none", "defined">;
+    deleteBackend: z<"none" | "shell", "none" | "shell", "defined">;
     shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
     deleteCommand: z<string, string, "plain">;
     moveCommand: z<string, string, "plain">;

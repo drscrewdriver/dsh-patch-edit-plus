@@ -26,8 +26,10 @@ export interface Config {
   conflictPolicy?: ConflictPolicy
   /** Suffix appended on rename avoidance. Defaults to `_1`. */
   renameSuffix?: string
-  /** Accept git/unified diff patches. Defaults to true. */
-  allowUnifiedDiff?: boolean
+  /** Accept git/unified diff patches. Defaults to true.
+   * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
+   * field — always read it through `readVolatileBoolean`, never cache the ref. */
+  allowUnifiedDiff?: boolean | Volatile<boolean>
   /** Accept Codex `apply_patch` syntax. Defaults to false.
    * 0.1.7 `.volatile()`: the loader hands `apply` a live `Volatile` ref for this
    * field — always read it through `readVolatileBoolean`, never cache the ref. */
@@ -57,7 +59,7 @@ export const Config = z.object({
   toolName: z.string().default('apply_patch'),
   conflictPolicy: z.union(['rename', 'skip', 'fail'] as const).default('rename'),
   renameSuffix: z.string().default('_1'),
-  allowUnifiedDiff: z.boolean().default(true),
+  allowUnifiedDiff: z.boolean().default(true).volatile(),
   allowCodexPatch: z.boolean().default(false).volatile(),
   deleteBackend: z.union(['shell', 'none'] as const).default('shell'),
   shellDialect: z.union(['auto', 'posix', 'pwsh'] as const).default('auto'),
@@ -105,7 +107,7 @@ export function resolveConfig(config: Config | undefined): ResolvedConfig {
     toolName: typeof c.toolName === 'string' && c.toolName.trim() !== '' ? c.toolName : 'apply_patch',
     conflictPolicy: c.conflictPolicy ?? 'rename',
     renameSuffix: typeof c.renameSuffix === 'string' ? c.renameSuffix : '_1',
-    allowUnifiedDiff: c.allowUnifiedDiff ?? true,
+    allowUnifiedDiff: readVolatileBoolean(c.allowUnifiedDiff, true),
     allowCodexPatch: readVolatileBoolean(c.allowCodexPatch, false),
     deleteBackend: c.deleteBackend ?? 'shell',
     shellDialect: c.shellDialect ?? 'auto',
