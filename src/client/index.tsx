@@ -41,9 +41,10 @@ interface ConfigFormsFace {
   get?(entryId: string): PatchFormScope | undefined
 }
 
-/** 客户端所需服务：slots（席位注册）。configForms 刻意不声明——经核心成员
- * `ctx.get` 结构性探测，缺席时卡片隐藏而非让整个客户端半拒绝加载。 */
-export const inject = ['slots']
+/** 客户端所需服务：slots（席位注册）+ configForms（entry 配置读写）。同族插件
+ * （session-guard/perm-gate）同样显式声明——runner 只把声明了的服务提供给模块
+ * 上下文，不声明时 `ctx.get('configForms')` 恒为 undefined，卡会渲染成 null。 */
+export const inject = ['slots', 'configForms']
 
 /** 轻量 ctx 类型（仅本客户端用到的方法；构建时类型被剥离）。 */
 interface SlotsFace {
@@ -221,7 +222,8 @@ export function PatchStyleCard(props: { form?: PatchFormScope | undefined }): JS
  * 以本插件 entry 的作用域为唯一事实来源。
  */
 export function apply(ctx: ClientCtx): void {
-  const configForms = (typeof ctx.get === 'function' ? ctx.get('configForms') : undefined) as ConfigFormsFace | undefined
+  const configForms = ((ctx as unknown as { configForms?: ConfigFormsFace }).configForms
+    ?? (typeof ctx.get === 'function' ? ctx.get('configForms') : undefined)) as ConfigFormsFace | undefined
   ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register(
     { name: 'plugins.bundle.config', key: 'dsh-patch-edit-plus' },
     () => createElement(PatchStyleCard, { form: configForms?.get?.('dsh-patch-edit-plus') }),

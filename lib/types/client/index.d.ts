@@ -14,8 +14,9 @@ export interface PatchFormScope {
     subscribe(listener: () => void): () => void;
     set(field: string, value: unknown): Promise<boolean>;
 }
-/** 客户端所需服务：slots（席位注册）。configForms 刻意不声明——经核心成员
- * `ctx.get` 结构性探测，缺席时卡片隐藏而非让整个客户端半拒绝加载。 */
+/** 客户端所需服务：slots（席位注册）+ configForms（entry 配置读写）。同族插件
+ * （session-guard/perm-gate）同样显式声明——runner 只把声明了的服务提供给模块
+ * 上下文，不声明时 `ctx.get('configForms')` 恒为 undefined，卡会渲染成 null。 */
 export declare const inject: string[];
 /** 轻量 ctx 类型（仅本客户端用到的方法；构建时类型被剥离）。 */
 interface SlotsFace {
