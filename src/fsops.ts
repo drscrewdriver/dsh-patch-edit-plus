@@ -20,10 +20,6 @@ import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
 import { ioError } from './errors.js'
 
 /**
- * The verify-source script asserts the intent-dance shape; see writeFile.
- */
-let fsIntentDanceSequenced = true
-/**
  * Write one file through the full intent dance. Must stay byte-for-byte the
  * official sequence — the verification script asserts it.
  * Old lines (0.1.0/0.1.1) may lack the write-intent events or the 5-param

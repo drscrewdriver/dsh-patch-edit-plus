@@ -9,7 +9,6 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { ResolvedConfig } from './config.js'
 import { PatchError } from './errors.js'
 import { buildApplyPatchTool } from './tool.js'
