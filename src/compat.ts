@@ -78,22 +78,38 @@ export function installSettingsCompat(
   entry: PluginConfig,
   hooks: SettingsHooks,
 ): void {
+  console.log('[dsh-patch-edit-plus] compat waist mounted')
   try {
     ctx.inject(['settings'], (settingsCtx) => {
+    try {
     const settings = (settingsCtx as unknown as { settings?: SettingsFace }).settings
       ?? (settingsCtx as unknown as SettingsFace)
     if (typeof settings?.installSection === 'function') {
       try {
         settings.installSection(ctx, namespace, schema, entry, hooks)
+        console.log('[dsh-patch-edit-plus] settings via installSection (0.1.2/0.1.5 line)')
       } catch (error) {
         console.warn('[dsh-patch-edit-plus] settings.installSection unavailable:', error)
       }
       return
     }
     if (typeof settings?.register === 'function') {
-      // register() must not fire on 0.1.7+ where the declarative volatile form
-      // owns the section; the presence of installSection above is what marks
-      // the instance-API generations. Legacy register rides the module helper.
+      // 0.1.0–0.1.5 imperative register（宿主模块级 installSettingsSection 的
+      // 内部实现就是这一段）。0.1.7+ 声明式线永远走不到这里——本函数只在组合
+      // 条目携带普通布尔（非 live ref）时才会被调用。真机注：0.1.0 沙盒根本
+      // 不发货 @deepseek-ai/dsh-settings 包，模块级 helper 不可解析，实例
+      // register 是唯一可达面。
+      try {
+        const scope = settings.register(namespace, schema, { base: entry })
+        if (scope !== undefined) {
+          hooks.setSource(() => scope.get())
+          scope.watch(() => { hooks.onChange() })
+          hooks.onChange()
+          console.log('[dsh-patch-edit-plus] settings via register (0.1.0-0.1.5 imperative face)')
+        }
+      } catch (error) {
+        console.warn('[dsh-patch-edit-plus] settings.register unavailable:', error)
+      }
       return
     }
     // 0.1.0/0.1.1: no instance API — the module-level helper wraps
@@ -111,6 +127,9 @@ export function installSettingsCompat(
     }).catch(() => {
       // Module absent on this line — no settings surface, tool still works.
     })
+    } catch (cbError) {
+      console.warn('[dsh-patch-edit-plus] settings callback threw:', cbError)
+    }
     })
   } catch (error) {
     // Hosts without the sub-inject seam (very old cordis) skip settings entirely.

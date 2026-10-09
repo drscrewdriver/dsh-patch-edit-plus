@@ -18,6 +18,7 @@ import { resolveConfig } from './config.js'
 import type { Config as PluginConfig } from './config.js'
 import { registerApplyPatchTool } from './register.js'
 import { installSettingsCompat } from './compat.js'
+import { readVolatileBoolean } from './config.js'
 import { Config } from './config.js'
 
 /** 设置命名空间（0.1.5 及以下实例/模块注册面用；0.1.7+ 声明式线不消费）。 */
@@ -89,16 +90,19 @@ export function apply(ctx: Context, config?: PluginConfig): void {
     }
   })
 
-  // 世代分流（特性检测，勿按版本号）：0.1.7+ 把 volatile 字段作为 live ref
-  // 塞进组合条目——看到 live ref 即声明式线，设置面宿主自渲染，任何注册调用
-  // 都属多余。老线拿到的是普通布尔，走三代腰补注册（0.1.2/0.1.5 实例
-  // installSection / register；0.1.0/0.1.1 模块级 installSettingsSection）。
-  if (typeof compositionEntry.allowUnifiedDiff !== 'object' && typeof compositionEntry.allowCodexPatch !== 'object') {
-    installSettingsCompat(ctx, SETTINGS_NAMESPACE, Config, compositionEntry, {
-      setSource: (current) => { readSource = current },
-      onChange: () => { rejudge() },
-    })
+  // 三代腰无条件挂载：loader 在每一代都经由 entry schema 传 config——live ref
+  // 连命令式宿主上也在（TL 实证），所以不能用「entry 带对象」判代。世代分流
+  // 全在设置服务面内做：0.1.7+ 服务无 register/installSection → 回调空转；
+  // 0.1.2/0.1.5 installSection；0.1.0/0.1.1 register。base 用 readVolatile 展平。
+  const plainBase: PluginConfig = {
+    ...compositionEntry,
+    allowUnifiedDiff: readVolatileBoolean(compositionEntry.allowUnifiedDiff as boolean | undefined, true),
+    allowCodexPatch: readVolatileBoolean(compositionEntry.allowCodexPatch as boolean | undefined, false),
   }
+  installSettingsCompat(ctx, SETTINGS_NAMESPACE, Config, plainBase, {
+    setSource: (current) => { readSource = current },
+    onChange: () => { rejudge() },
+  })
 
   // 0.1.7+: 只有 volatile 字段变更才走这里（不 remount）；普通字段变更会整体
   // remount 插件，新一次 `apply` 自然读到全部新值。等值变更宿主不通知。
