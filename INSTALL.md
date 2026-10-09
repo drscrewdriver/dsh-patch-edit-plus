@@ -34,15 +34,16 @@ The placeholders in this guide are:
 - `<profile>`: the DSH profile to modify, usually `web`;
 - `dsh-patch-edit-plus`: the npm package, the runtime plugin ID, and the id of the single row the bundle patch inserts.
 
-> **Supported DSH range: `>=0.2.0-rc.1 <0.2.1-0`.**
+> **Supported DSH range: `>=0.1.0-rc.8` through `0.2.0-rc.2` (incl. desktop) — a single release, v0.4.0.**
 >
 > Check the running version with `dsh --version` first.
 >
 > | DSH version | Status | Notes |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | supported | This branch's target line. Typechecked against the real `0.2.0-rc.1` peer packages (`npm run typecheck:0.2.0`); Delete/Move use the `ShellExecutor.execute()` + `result()` foreground API. |
-> | `0.1.7-rc.1+` | served elsewhere | Maintained by the `compat/0.1.7` branch / `dsh-0.1.7` dist-tag (package version 0.2.1 there). |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | served elsewhere | Maintained by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2` (incl. desktop) | supported | Same v0.4.0. |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | supported | Same v0.4.0 — no branch or dist-tag selection is needed. |
+>
+> Install `latest` on any supported host line: one version serves 0.1.x and 0.2.x alike. After publishing, the dist-tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` and `dsh-0.1.2` all point to 0.4.0.
 
 ## 0. Prerequisites and profile discovery
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 Install a specific version explicitly:
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 The official CLI updates the profile dependency, the lockfile, and `dsh.profile.bundles` automatically. Do not add a manual YAML row.
@@ -76,7 +77,7 @@ The DSH runtime uses pnpm 11, whose `minimumReleaseAge` policy may block a fresh
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. Restart the host

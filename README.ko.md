@@ -6,13 +6,18 @@
 
 ## DSH 버전 호환성
 
+**v0.4.0은 전체 호스트 라인을 단일 버전으로 커버합니다**: `0.1.0-rc.8`부터 `0.2.0-rc.2`까지(15개 rc 전부 + desktop) 모든 DSH 호스트를 같은 버전이 지원합니다. 이전의 4개 라인(`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`, `main` 분할 방식)은 모두 은퇴했습니다. 배포 후 npm dist-tag `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5`, `dsh-0.1.2`는 모두 0.4.0을 가리킵니다.
+
 | DSH 버전 | 상태 | 비고 |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ 지원됨(본 라인, v0.3.0+) | 선언적 설정: `allowCodexPatch`에 `.volatile()`가 표시되어 설정 폼이 자동 생성되고, `loader/volatile-update`가 리마운트 없이 도구를 그 자리에서 재등록합니다. 등록 호출이 없습니다. Delete/Move는 `ShellExecutor.execute()` + `result()` 포그라운드 API로 이전되었습니다. |
-| `0.1.7-rc.1+` | ↗ 유지보수 라인 | `compat/0.1.7` 브랜치 / `dsh-0.1.7` dist-tag가 담당(해당 라인의 v0.2.1). 0.2.0 이전에 셸 실행기의 `run`이 `execute`로 이름이 바뀌었고(0.1.2 → 0.1.7 사이), 하나의 코드베이스로 두 라인을 타입 안전하게 지원할 수 없습니다. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ 유지보수 라인 | 0.1.7 이전 브랜치 / `dsh-0.1.5` dist-tag가 담당. 0.1.7은 이중 API 폴백이 의존하던 명령형 등록 API를 제거했습니다. |
+| `0.2.0-rc.1+` | ✅ 지원됨(동일한 v0.4.0) | 선언적 설정: `.volatile()`로 표시된 필드가 곧 설정 폼이며, `loader/volatile-update`가 리마운트 없이 도구를 그 자리에서 재등록합니다. 플러그인 페이지 설정 카드(client 쪽)는 이 라인에 자리가 있습니다. |
+| `0.1.0-rc.8` ~ `0.1.7-rc.2` | ✅ 지원됨(동일한 v0.4.0) | 세대별 설정: 인스턴스 `settings.installSection`/`register`(0.1.2/0.1.5) 또는 `@deepseek-ai/dsh-settings`의 모듈 수준 `installSettingsSection`(0.1.0/0.1.1). 플러그인 페이지 설정 카드는 여기에 우아하게 부재합니다. |
 
-본 라인의 설정은 선언적입니다: `Config`에서 `.volatile()`로 표시된 필드가 곧 설정 폼이며, 플러그인은 등록 훅 대신 `loader/volatile-update`를 구독합니다.
+**동작 변경**: `allowCodexPatch` 기본값이 `false`로 바뀌었습니다(옵트인, 0.2.0 라인과 정렬). 기존 0.1.7 라인(기본값 `true`)에서 업그레이드하는 사용자는 업그레이드 후 스위치를 수동으로 켜야 합니다.
+
+설정 면은 3세대 호스트에 걸쳐 있으며 모두 이 단일 버전이 지원합니다: 0.1.7+(및 desktop)에서는 선언적 —— `Config`에서 `.volatile()`로 표시된 필드가 설정 폼이고, 플러그인은 `loader/volatile-update`를 구독합니다. 0.1.2/0.1.5에서는 인스턴스 `settings.installSection`/`register` API를, 0.1.0/0.1.1에서는 `@deepseek-ai/dsh-settings`의 모듈 수준 `installSettingsSection`을 사용합니다. 플러그인 페이지 설정 카드(client 쪽)는 0.1.7+/desktop에만 자리가 있고 구 라인에서는 우아하게 부재합니다.
+
+도구 기능은 모든 라인에서 동일합니다: `apply_patch` 1개, git/unified diff 기본 + Codex 옵트인, 전체 검증 후 원자적 적용, read-before-write intent 댄스(호스트 `fs`에 write-intent가 없는 라인에서는 직접 쓰기로 자동 강등하며 `console.warn`을 1회 출력), 샌드박스 인식 delete/move.
 
 ## 왜 굳이 패치인가? (도구 라우팅 가이드)
 

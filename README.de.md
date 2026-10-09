@@ -6,13 +6,18 @@ Patch-basierte Dateibearbeitung für [DeepSeek Harness (DSH)](https://github.com
 
 ## DSH-Versionskompatibilität
 
+**v0.4.0 ist eine einzelne Version, die die gesamte Host-Linie abdeckt**: eine Version bedient alle DSH von `0.1.0-rc.8` bis `0.2.0-rc.2` (alle 15 RCs plus Desktop). Die vier eingestellten Linien (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` und das `main`-Aufteilungsschema) sind retired; nach der Veröffentlichung zeigen die npm-Dist-Tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` und `dsh-0.1.2` alle auf 0.4.0.
+
 | DSH-Version | Status | Hinweise |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ unterstützt (diese Linie, v0.3.0+) | Deklarative Einstellungen: `allowCodexPatch` ist mit `.volatile()` markiert — das Einstellungsformular wird automatisch gerendert, und `loader/volatile-update` registriert das Werkzeug ohne Remount neu. Kein Registrierungsaufruf. Delete/Move wurde auf die Foreground-API `ShellExecutor.execute()` + `result()` migriert. |
-| `0.1.7-rc.1+` | ↗ Wartungslinie | Wird vom Zweig `compat/0.1.7` / dem Dist-Tag `dsh-0.1.7` bedient (dort v0.2.1). Der Shell-Executor von 0.2.0 benannte `run` → `execute` um (eingeführt zwischen 0.1.2 und 0.1.7), daher kann eine einzige Codebasis nicht typsicher beide Linien bedienen. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ Wartungslinie | Wird vom Zweig vor 0.1.7 / dem Dist-Tag `dsh-0.1.5` bedient. 0.1.7 entfernte die imperativen Einstellungs-APIs, auf die der Dual-API-Fallback angewiesen war. |
+| `0.2.0-rc.1+` | ✅ unterstützt (dieselbe v0.4.0) | Deklarative Einstellungen: mit `.volatile()` markierte Felder werden zum Einstellungsformular, und `loader/volatile-update` registriert das Werkzeug ohne Remount neu. Die Konfigurationskarte auf der Plugin-Seite (Client-Hälfte) hat auf dieser Linie einen Platz. |
+| `0.1.0-rc.8` ~ `0.1.7-rc.2` | ✅ unterstützt (dieselbe v0.4.0) | Einstellungen je Generation: Instanz-`settings.installSection`/`register` (0.1.2/0.1.5) oder das modulweite `installSettingsSection` von `@deepseek-ai/dsh-settings` (0.1.0/0.1.1). Die Konfigurationskarte auf der Plugin-Seite fehlt hier elegant. |
 
-Einstellungen sind auf dieser Linie deklarativ: In `Config` mit `.volatile()` markierte Felder werden zum Einstellungsformular; das Plugin abonniert `loader/volatile-update`, statt Registrierungs-Hooks zu empfangen.
+**Verhaltensänderung:** `allowCodexPatch` hat nun den Standardwert `false` (Opt-in, an der 0.2.0-Linie ausgerichtet). Wer von der alten 0.1.7-Linie (dort Standard `true`) aufrüstet, muss den Schalter nach dem Upgrade manuell aktivieren.
+
+Die Einstellungen umfassen drei Host-Generationen, alle von dieser einen Version bedient: auf 0.1.7+ (und Desktop) ist die Konfiguration deklarativ — mit `.volatile()` markierte Felder in `Config` sind das Einstellungsformular, und das Plugin abonniert `loader/volatile-update`; auf 0.1.2/0.1.5 nutzt es die Instanz-APIs `settings.installSection`/`register`; auf 0.1.0/0.1.1 das modulweite `installSettingsSection` von `@deepseek-ai/dsh-settings`. Die Konfigurationskarte auf der Plugin-Seite (Client-Hälfte) hat nur auf 0.1.7+/Desktop einen Platz und fehlt auf älteren Linien elegant.
+
+Die Werkzeugfähigkeiten sind auf jeder Linie identisch: ein einziges `apply_patch`-Werkzeug, git/unified diff als Standard plus Codex als Opt-in, Alles-oder-Nichts-Anwendung, der Read-before-Write-Intent-Tanz (auf Linien ohne write-intent im `fs` degradieren Schreibvorgänge zu direkten Schreibzugriffen mit genau einem `console.warn`) und sandbox-bewusstes Delete/Move.
 
 ## Warum überhaupt Patches? (Tool-Routing-Leitfaden)
 

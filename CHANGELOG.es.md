@@ -1,5 +1,18 @@
 # Registro de cambios
 
+## [0.4.0] — 2026-10-09
+
+### Añadido
+
+- **Una única versión para todas las líneas de hosts.** Una sola versión (0.4.0) atiende todos los hosts DSH desde `0.1.0-rc.8` hasta `0.2.0-rc.2` — los 15 rc más desktop; los rangos de peers enumeran los 15 rc y `engines.dsh` declara `>=0.1.0-rc.8`. Las ramas compat retiradas (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`) y el esquema de división por `main` se eliminan; tras la publicación, los dist-tags de npm `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` y `dsh-0.1.2` convergen todos en 0.4.0.
+- **Tres generaciones de ajustes en una sola base de código**: `.volatile()` declarativo más re-registro vía `loader/volatile-update` en 0.1.7+ (y desktop); `settings.installSection`/`register` de instancia en 0.1.2/0.1.5; `installSettingsSection` a nivel de módulo de `@deepseek-ai/dsh-settings` en 0.1.0/0.1.1. La tarjeta de configuración de la página del plugin (mitad cliente) solo tiene sitio en 0.1.7+/desktop y en las líneas antiguas está ausente con elegancia.
+- Ruta de autoría `defineTool` con degradación suave del fs: en las líneas cuyo `fs` carece de write-intent, las escrituras degradan a escritura directa con un único `console.warn` en lugar de fallar.
+- Matriz de typecheck de seis líneas, más una compuerta de smoke que cubre los escenarios de ausencia elegante.
+
+### Cambiado
+
+- **Ruptura: `allowCodexPatch` ahora es `false` por defecto** (opt-in, alineado con la línea 0.2.0; el antiguo valor por defecto de la línea 0.1.7 era `true`). Los usuarios existentes de la línea 0.1.7 deben activarlo manualmente tras actualizar a 0.4.0.
+
 ## [0.3.0] — 2026-09-29
 
 ### Cambiado

@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [0.4.0] — 2026-10-09
+
+### Added
+
+- **Single release across all host lines.** One version (0.4.0) serves every DSH host from `0.1.0-rc.8` to `0.2.0-rc.2` — all 15 rc releases plus desktop; the peer ranges enumerate all 15 rcs and `engines.dsh` declares `>=0.1.0-rc.8`. The retired compat branches (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`) and the `main` split-line scheme are gone; after publishing, the npm dist-tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` and `dsh-0.1.2` all converge on 0.4.0.
+- **Three settings generations in one codebase**: declarative `.volatile()` plus `loader/volatile-update` re-registration on 0.1.7+ (and desktop); instance `settings.installSection`/`register` on 0.1.2/0.1.5; module-level `installSettingsSection` from `@deepseek-ai/dsh-settings` on 0.1.0/0.1.1. The plugin-page configuration card (client half) has a seat only on 0.1.7+/desktop and is gracefully absent on older lines.
+- `defineTool` authoring path with fs soft-degradation: on host lines whose `fs` lacks write-intent, writes degrade to a direct write with a single `console.warn` instead of failing.
+- Six-line typecheck matrix, plus a smoke gate covering the graceful-absence scenarios.
+
+### Changed
+
+- **Breaking: `allowCodexPatch` now defaults to `false`** (opt-in, aligned with the 0.2.0 line; the old 0.1.7-line default was `true`). Existing 0.1.7-line users must enable it manually after upgrading to 0.4.0.
+
 ## [0.3.1] — 2026-10-01
 
 ### Fixed

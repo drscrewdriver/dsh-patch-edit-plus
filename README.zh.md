@@ -6,13 +6,18 @@
 
 ## DSH 版本适配矩阵
 
+**v0.4.0 是单版本覆盖全宿主线**：一个版本服务 `0.1.0-rc.8` 到 `0.2.0-rc.2` 的所有 DSH 宿主（全部 15 个 rc + desktop）。旧的四条线（`compat/0.1.2`、`compat/0.1.5`、`compat/0.1.7` 与 `main` 分线方案）全部退役；发布后 npm dist-tag `latest`、`dsh-0.2.0`、`dsh-0.1.7`、`dsh-0.1.5`、`dsh-0.1.2` 将全部指向 0.4.0。
+
 | DSH 版本 | 状态 | 说明 |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ 支持（本线，v0.3.0+） | 声明式设置：`allowCodexPatch` 标记 `.volatile()`——设置表单自动生成，`loader/volatile-update` 驱动工具原位重注册（不 remount），无任何注册调用。Delete/Move 已迁移到 `ShellExecutor.execute()` + `result()` 前台 API。 |
-| `0.1.7-rc.1+` | ↗ 维护线 | 由 `compat/0.1.7` 分支 / `dsh-0.1.7` dist-tag 服务（该线 v0.2.1）。0.2.0 之前 shell 执行器已把 `run` 改名为 `execute`（发生在 0.1.2 → 0.1.7 之间），一份代码无法对两条线同时类型安全。 |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ 维护线 | 由 0.1.7 前的分支 / `dsh-0.1.5` dist-tag 服务。0.1.7 删除了双 API 回退所依赖的命令式注册 API。 |
+| `0.2.0-rc.1+` | ✅ 支持（同一个 v0.4.0） | 声明式设置：`Config` 中标记 `.volatile()` 的字段即设置表单，`loader/volatile-update` 驱动工具原位重注册（不 remount）。插件页配置卡（client 半）在本线有席位。 |
+| `0.1.0-rc.8` ~ `0.1.7-rc.2` | ✅ 支持（同一个 v0.4.0） | 按代际提供设置：实例 `settings.installSection`/`register`（0.1.2/0.1.5）或 `@deepseek-ai/dsh-settings` 模块级 `installSettingsSection`（0.1.0/0.1.1）。插件页配置卡在本线优雅缺席。 |
 
-本线的 settings 是声明式的：`Config` 中标记 `.volatile()` 的字段即设置表单；插件订阅 `loader/volatile-update`，不再接收注册 hooks。
+**行为变更**：`allowCodexPatch` 默认值改为 `false`（opt-in，与 0.2.0 线对齐）。从旧 0.1.7 线（默认 `true`）升级的用户需在升级后手动打开该开关。
+
+设置面覆盖三代宿主，均由这同一个版本服务：0.1.7+（及 desktop）是声明式 —— `Config` 中标记 `.volatile()` 的字段即设置表单，插件订阅 `loader/volatile-update`；0.1.2/0.1.5 使用实例 `settings.installSection`/`register` API；0.1.0/0.1.1 使用 `@deepseek-ai/dsh-settings` 的模块级 `installSettingsSection`。插件页配置卡（client 半）仅在 0.1.7+/desktop 有席位，老线优雅缺席。
+
+工具能力在各线完全一致：只注册 1 个 `apply_patch` 工具、git/unified diff 默认 + Codex 可选、全量验证原子应用、read-before-write intent 舞蹈（宿主 `fs` 缺 write-intent 时自动降级直写并 `console.warn` 一次）、沙箱感知的 delete/move。
 
 ## 工具路由指引（为什么该用谁）
 

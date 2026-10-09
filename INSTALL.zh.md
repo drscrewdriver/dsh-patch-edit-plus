@@ -34,15 +34,16 @@
 - `<profile>`：要改动的 DSH profile，通常是 `web`；
 - `dsh-patch-edit-plus`：npm 包名、运行时插件 ID，同时也是 bundle 补丁所插入的那一行 id。
 
-> **支持的 DSH 范围：`>=0.2.0-rc.1 <0.2.1-0`。**
+> **支持的 DSH 范围：`0.1.0-rc.8` 至 `0.2.0-rc.2`（含 desktop）—— 单一版本 v0.4.0。**
 >
 > 先用 `dsh --version` 确认当前版本。
 >
 > | DSH 版本 | 状态 | 说明 |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | 支持 | 本分支的目标线。已对 registry 真实安装的 `0.2.0-rc.1` peer 包做类型核验（`npm run typecheck:0.2.0`）；Delete/Move 使用 `ShellExecutor.execute()` + `result()` 前台 API。 |
-> | `0.1.7-rc.1+` | 由其他分支服务 | 由 `compat/0.1.7` 分支 / `dsh-0.1.7` dist-tag 维护（该线包版本 0.2.1）。 |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | 由其他分支服务 | 由 0.1.7 前的分支 / `dsh-0.1.5` dist-tag 维护。 |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2`（含 desktop） | 支持 | 同一个 v0.4.0。 |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | 支持 | 同一个 v0.4.0 —— 无需选择分支或 dist-tag。 |
+>
+> 任何受支持宿主线一律安装 `latest`：一个版本同时服务 0.1.x 与 0.2.x。发布后 dist-tag `latest`、`dsh-0.2.0`、`dsh-0.1.7`、`dsh-0.1.5`、`dsh-0.1.2` 将全部指向 0.4.0。
 
 ## 0. 前置条件与 profile 探查
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 显式安装指定版本：
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 官方 CLI 会自动更新 profile 依赖、锁文件与 `dsh.profile.bundles`。不要手工添加 YAML 行。
@@ -76,7 +77,7 @@ DSH 运行时使用 pnpm 11，其 `minimumReleaseAge` 策略可能拦截刚发�
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. 重启宿主

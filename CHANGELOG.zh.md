@@ -1,6 +1,19 @@
 # 更新日志
 
 
+## [0.4.0] — 2026-10-09
+
+### 新增
+
+- **单版本覆盖全宿主线。** 一个版本（0.4.0）服务 `0.1.0-rc.8` 到 `0.2.0-rc.2` 的所有 DSH 宿主——全部 15 个 rc + desktop；peer 范围枚举全部 15 个 rc，`engines.dsh` 声明 `>=0.1.0-rc.8`。退役的 compat 分支（`compat/0.1.2`、`compat/0.1.5`、`compat/0.1.7`）与 `main` 分线方案全部移除；发布后 npm dist-tag `latest`、`dsh-0.2.0`、`dsh-0.1.7`、`dsh-0.1.5`、`dsh-0.1.2` 将全部收敛到 0.4.0。
+- **一份代码覆盖三代设置面**：0.1.7+（及 desktop）为声明式 `.volatile()` + `loader/volatile-update` 重注册；0.1.2/0.1.5 为实例 `settings.installSection`/`register`；0.1.0/0.1.1 为 `@deepseek-ai/dsh-settings` 模块级 `installSettingsSection`。插件页配置卡（client 半）仅在 0.1.7+/desktop 有席位，老线优雅缺席。
+- `defineTool` 编写路径与 fs 软降级：宿主 `fs` 缺 write-intent 的线上，写入自动降级为直写并 `console.warn` 一次，不再失败。
+- 六线 typecheck 矩阵，以及覆盖优雅缺席场景的 smoke 闸。
+
+### 变更
+
+- **破坏性变更：`allowCodexPatch` 默认值改为 `false`**（opt-in，与 0.2.0 线对齐；旧 0.1.7 线默认为 `true`）。存量 0.1.7 线用户升级到 0.4.0 后需手动打开该开关。
+
 ## [0.3.1] — 2026-10-01
 
 ### 修复

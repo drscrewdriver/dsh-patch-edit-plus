@@ -6,13 +6,18 @@ Français | [English](./README.md) | [简体中文](./README.zh.md) | [日本語
 
 ## Compatibilité des versions de DSH
 
+**La v0.4.0 est une version unique couvrant toute la ligne d'hôtes** : une seule version sert tous les DSH de `0.1.0-rc.8` à `0.2.0-rc.2` (les 15 rc plus desktop). Les quatre anciennes lignes (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` et le schéma de scission `main`) sont retirées ; après publication, les dist-tags npm `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` et `dsh-0.1.2` pointeront tous vers 0.4.0.
+
 | Version de DSH | Statut | Notes |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ pris en charge (cette ligne, v0.3.0+) | Paramètres déclaratifs : `allowCodexPatch` est marqué `.volatile()` — le formulaire de paramètres est généré automatiquement et `loader/volatile-update` réenregistre l'outil sans remontage (remount). Aucun appel d'enregistrement. Delete/Move migrés vers l'API de premier plan `ShellExecutor.execute()` + `result()`. |
-| `0.1.7-rc.1+` | ↗ ligne de maintenance | Assurée par la branche `compat/0.1.7` / le dist-tag `dsh-0.1.7` (v0.2.1 sur cette ligne). L'exécuteur shell de 0.2.0 a renommé `run` → `execute` (changement introduit entre 0.1.2 et 0.1.7) ; une seule base de code ne peut donc pas servir les deux lignes de manière type-safe. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ ligne de maintenance | Assurée par la branche antérieure à 0.1.7 / le dist-tag `dsh-0.1.5`. La 0.1.7 a supprimé les API impératives de paramétrage dont dépendait le repli bi-API (dual-API fallback). |
+| `0.2.0-rc.1+` | ✅ pris en charge (même v0.4.0) | Paramètres déclaratifs : les champs marqués `.volatile()` constituent le formulaire de paramètres, et `loader/volatile-update` réenregistre l'outil sans remontage (remount). La carte de configuration de la page du plugin (moitié client) a sa place sur cette ligne. |
+| `0.1.0-rc.8` ~ `0.1.7-rc.2` | ✅ pris en charge (même v0.4.0) | Paramètres par génération : `settings.installSection`/`register` d'instance (0.1.2/0.1.5) ou `installSettingsSection` au niveau module de `@deepseek-ai/dsh-settings` (0.1.0/0.1.1). La carte de configuration de la page du plugin est absente avec élégance ici. |
 
-Sur cette ligne, les paramètres sont déclaratifs : les champs marqués `.volatile()` dans `Config` constituent le formulaire de paramètres ; le plugin s'abonne à `loader/volatile-update` au lieu de recevoir des hooks d'enregistrement.
+**Changement de comportement :** `allowCodexPatch` est désormais `false` par défaut (opt-in, aligné sur la ligne 0.2.0). Si vous mettez à niveau depuis l'ancienne ligne 0.1.7 (où la valeur par défaut était `true`), activez l'interrupteur manuellement après la mise à niveau.
+
+Les paramètres couvrent trois générations d'hôtes, toutes servies par cette version unique : sur 0.1.7+ (et desktop), la configuration est déclarative — les champs marqués `.volatile()` dans `Config` sont le formulaire de paramètres et le plugin s'abonne à `loader/volatile-update` ; sur 0.1.2/0.1.5, il utilise les API d'instance `settings.installSection`/`register` ; sur 0.1.0/0.1.1, le `installSettingsSection` au niveau module de `@deepseek-ai/dsh-settings`. La carte de configuration de la page du plugin (moitié client) n'a sa place que sur 0.1.7+/desktop et est absente avec élégance sur les anciennes lignes.
+
+Les capacités de l'outil sont identiques sur chaque ligne : un seul outil `apply_patch`, diff git/unifié par défaut plus Codex en opt-in, application tout-ou-rien, la danse d'intention lecture-avant-écriture (sur les lignes dont le `fs` n'a pas write-intent, les écritures dégradent en écriture directe avec un seul `console.warn`), et delete/move conscient du bac à sable.
 
 ## Pourquoi faire des patchs ? (guide de routage des outils)
 

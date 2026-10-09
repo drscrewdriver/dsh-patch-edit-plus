@@ -6,13 +6,18 @@ Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepsee
 
 ## DSH version compatibility
 
+**v0.4.0 is a single release covering the whole host line**: one version serves every DSH from `0.1.0-rc.8` to `0.2.0-rc.2` (all 15 rc releases plus desktop). The four retired lines (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`, and the `main` split-line scheme) are gone; after publishing, the npm dist-tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` and `dsh-0.1.2` all point to 0.4.0.
+
 | DSH version | Status | Notes |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ supported (this line, v0.3.0+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. No registration call. Delete/Move migrated to the `ShellExecutor.execute()` + `result()` foreground API. |
-| `0.1.7-rc.1+` | ↗ maintenance line | Served by the `compat/0.1.7` branch / `dsh-0.1.7` dist-tag (v0.2.1 there). 0.2.0's shell executor renamed `run` → `execute` (introduced between 0.1.2 and 0.1.7), so one codebase cannot serve both lines type-safely. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ maintenance line | Served by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. 0.1.7 removed the imperative settings APIs the dual-API fallback relied on. |
+| `0.2.0-rc.1+` | ✅ supported (same v0.4.0) | Declarative settings: fields marked `.volatile()` become the settings form, and `loader/volatile-update` re-registers the tool in place without a remount. The plugin-page configuration card (client half) has a seat on this line. |
+| `0.1.0-rc.8` ~ `0.1.7-rc.2` | ✅ supported (same v0.4.0) | Settings per generation: instance `settings.installSection`/`register` (0.1.2/0.1.5) or the module-level `installSettingsSection` of `@deepseek-ai/dsh-settings` (0.1.0/0.1.1). The plugin-page configuration card is gracefully absent here. |
 
-Settings are declarative on this line: fields marked `.volatile()` in `Config` become the settings form; the plugin subscribes to `loader/volatile-update` instead of receiving registration hooks.
+**Behavior change:** `allowCodexPatch` now defaults to `false` (opt-in, aligned with the 0.2.0 line). If you upgrade from the old 0.1.7 line (where the default was `true`), enable the switch manually after upgrading.
+
+Settings span three host generations, all served by this single version: on 0.1.7+ (and desktop) the config is declarative — fields marked `.volatile()` in `Config` are the settings form, and the plugin subscribes to `loader/volatile-update`; on 0.1.2/0.1.5 it uses the instance `settings.installSection`/`register` APIs; on 0.1.0/0.1.1 it uses the module-level `installSettingsSection` of `@deepseek-ai/dsh-settings`. The plugin-page configuration card (client half) only has a seat on 0.1.7+/desktop and is gracefully absent on older lines.
+
+Tool capabilities are identical on every line: one `apply_patch` tool, git/unified diff by default plus Codex opt-in, all-or-nothing application, the read-before-write intent dance (on host lines whose `fs` lacks write-intent, writes degrade to a direct write with a single `console.warn`), and sandbox-aware delete/move.
 
 ## Why patch at all? (tool routing guide)
 

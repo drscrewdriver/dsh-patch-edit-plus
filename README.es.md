@@ -6,13 +6,18 @@ Edición de archivos estilo parche para [DeepSeek Harness (DSH)](https://github.
 
 ## Compatibilidad de versiones de DSH
 
+**La v0.4.0 es una única versión que cubre toda la línea de hosts**: una sola versión atiende todos los DSH desde `0.1.0-rc.8` hasta `0.2.0-rc.2` (los 15 rc más desktop). Las cuatro líneas retiradas (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` y el esquema de división por `main`) se jubilan; tras la publicación, los dist-tags de npm `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` y `dsh-0.1.2` apuntarán todos a 0.4.0.
+
 | Versión de DSH | Estado | Notas |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ compatible (esta línea, v0.3.0+) | Ajustes declarativos: `allowCodexPatch` está marcado con `.volatile()` — el formulario de ajustes se genera automáticamente y `loader/volatile-update` vuelve a registrar la herramienta sin remontaje. Sin llamada de registro. Delete/Move migrados a la API de primer plano `ShellExecutor.execute()` + `result()`. |
-| `0.1.7-rc.1+` | ↗ línea de mantenimiento | Atendida por la rama `compat/0.1.7` / el dist-tag `dsh-0.1.7` (v0.2.1 allí). El ejecutor de shell de 0.2.0 renombró `run` → `execute` (cambio introducido entre 0.1.2 y 0.1.7), así que una sola base de código no puede atender ambas líneas de forma type-safe. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ línea de mantenimiento | Atendida por la rama anterior a 0.1.7 / el dist-tag `dsh-0.1.5`. La 0.1.7 eliminó las API imperativas de ajustes de las que dependía el fallback de doble API. |
+| `0.2.0-rc.1+` | ✅ compatible (misma v0.4.0) | Ajustes declarativos: los campos marcados con `.volatile()` se convierten en el formulario de ajustes, y `loader/volatile-update` vuelve a registrar la herramienta sin remontaje. La tarjeta de configuración de la página del plugin (mitad cliente) tiene sitio en esta línea. |
+| `0.1.0-rc.8` ~ `0.1.7-rc.2` | ✅ compatible (misma v0.4.0) | Ajustes por generación: `settings.installSection`/`register` de instancia (0.1.2/0.1.5) o `installSettingsSection` a nivel de módulo de `@deepseek-ai/dsh-settings` (0.1.0/0.1.1). La tarjeta de configuración de la página del plugin está ausente con elegancia aquí. |
 
-En esta línea los ajustes son declarativos: los campos marcados con `.volatile()` en `Config` se convierten en el formulario de ajustes; el plugin se suscribe a `loader/volatile-update` en lugar de recibir hooks de registro.
+**Cambio de comportamiento:** `allowCodexPatch` ahora es `false` por defecto (opt-in, alineado con la línea 0.2.0). Si actualizas desde la antigua línea 0.1.7 (donde el valor por defecto era `true`), activa el interruptor manualmente tras la actualización.
+
+Los ajustes abarcan tres generaciones de hosts, todas atendidas por esta única versión: en 0.1.7+ (y desktop) la configuración es declarativa — los campos marcados con `.volatile()` en `Config` son el formulario de ajustes y el plugin se suscribe a `loader/volatile-update`; en 0.1.2/0.1.5 usa las API de instancia `settings.installSection`/`register`; en 0.1.0/0.1.1 usa el `installSettingsSection` a nivel de módulo de `@deepseek-ai/dsh-settings`. La tarjeta de configuración de la página del plugin (mitad cliente) solo tiene sitio en 0.1.7+/desktop y en las líneas antiguas está ausente con elegancia.
+
+Las capacidades de la herramienta son idénticas en cada línea: una única herramienta `apply_patch`, diff git/unificado por defecto más Codex como opcional, aplicación todo-o-nada, la danza de intención de leer-antes-de-escribir (en las líneas cuyo `fs` carece de write-intent, las escrituras degradan a escritura directa con un único `console.warn`) y delete/move consciente del sandbox.
 
 ## ¿Por qué usar parches? (guía de enrutamiento de herramientas)
 
