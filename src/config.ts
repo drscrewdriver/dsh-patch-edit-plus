@@ -8,6 +8,7 @@
 
 import z from '@deepseek-ai/schemastery'
 import type { Volatile } from '@deepseek-ai/cosmokit'
+import { maybeVolatile } from './compat.js'
 
 /** What to do when the configured tool name is already taken at registration. */
 export type ConflictPolicy = 'rename' | 'skip' | 'fail'
@@ -59,8 +60,8 @@ export const Config = z.object({
   toolName: z.string().default('apply_patch'),
   conflictPolicy: z.union(['rename', 'skip', 'fail'] as const).default('rename'),
   renameSuffix: z.string().default('_1'),
-  allowUnifiedDiff: z.boolean().default(true).volatile(),
-  allowCodexPatch: z.boolean().default(false).volatile(),
+  allowUnifiedDiff: maybeVolatile(z.boolean().default(true)),
+  allowCodexPatch: maybeVolatile(z.boolean().default(false)),
   deleteBackend: z.union(['shell', 'none'] as const).default('shell'),
   shellDialect: z.union(['auto', 'posix', 'pwsh'] as const).default('auto'),
   deleteCommand: z.string(),

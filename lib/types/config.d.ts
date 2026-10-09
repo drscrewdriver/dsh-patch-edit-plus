@@ -53,9 +53,9 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     toolName: z<string, string, "defined">;
     conflictPolicy: z<"rename" | "skip" | "fail", "rename" | "skip" | "fail", "defined">;
     renameSuffix: z<string, string, "defined">;
-    allowUnifiedDiff: z<boolean, boolean, "volatile-defined">;
-    allowCodexPatch: z<boolean, boolean, "volatile-defined">;
-    deleteBackend: z<"none" | "shell", "none" | "shell", "defined">;
+    allowUnifiedDiff: z<boolean, boolean, "defined">;
+    allowCodexPatch: z<boolean, boolean, "defined">;
+    deleteBackend: z<"shell" | "none", "shell" | "none", "defined">;
     shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
     deleteCommand: z<string, string, "plain">;
     moveCommand: z<string, string, "plain">;
@@ -68,9 +68,9 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     toolName: z<string, string, "defined">;
     conflictPolicy: z<"rename" | "skip" | "fail", "rename" | "skip" | "fail", "defined">;
     renameSuffix: z<string, string, "defined">;
-    allowUnifiedDiff: z<boolean, boolean, "volatile-defined">;
-    allowCodexPatch: z<boolean, boolean, "volatile-defined">;
-    deleteBackend: z<"none" | "shell", "none" | "shell", "defined">;
+    allowUnifiedDiff: z<boolean, boolean, "defined">;
+    allowCodexPatch: z<boolean, boolean, "defined">;
+    deleteBackend: z<"shell" | "none", "shell" | "none", "defined">;
     shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
     deleteCommand: z<string, string, "plain">;
     moveCommand: z<string, string, "plain">;

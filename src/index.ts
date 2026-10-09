@@ -17,6 +17,11 @@ import type { Context } from '@deepseek-ai/cordis'
 import { resolveConfig } from './config.js'
 import type { Config as PluginConfig } from './config.js'
 import { registerApplyPatchTool } from './register.js'
+import { installSettingsCompat } from './compat.js'
+import { Config } from './config.js'
+
+/** 设置命名空间（0.1.5 及以下实例/模块注册面用；0.1.7+ 声明式线不消费）。 */
+export const SETTINGS_NAMESPACE = 'patch-edit-plus'
 
 // The dev pins (0.1.2-rc.1 era) predate the 0.1.7 loader event. The 0.1.7 host
 // emits it for volatile-only config changes and passes the changed paths.
@@ -59,11 +64,15 @@ export function apply(ctx: Context, config?: PluginConfig): void {
   // 重解析一次，一次调用内是同一份快照；跨调用的最新值由事件驱动重取。
   const compositionEntry = config ?? {}
 
+  // 权威来源：设置层挂载时是解析后的 scope（installSection/installSettingsSection
+  // 的 setSource 在 attach 时先于 onChange 调用），否则是组合条目。
+  let readSource: () => PluginConfig = () => compositionEntry
+
   let disposer: (() => void) | null = null
   let registeredKey: string | null = null
 
   const rejudge = (): void => {
-    const next = resolveConfig(compositionEntry)
+    const next = resolveConfig(readSource())
     const key = JSON.stringify(next)
     if (key === registeredKey) return
     disposer?.()
@@ -80,9 +89,26 @@ export function apply(ctx: Context, config?: PluginConfig): void {
     }
   })
 
+  // 世代分流（特性检测，勿按版本号）：0.1.7+ 把 volatile 字段作为 live ref
+  // 塞进组合条目——看到 live ref 即声明式线，设置面宿主自渲染，任何注册调用
+  // 都属多余。老线拿到的是普通布尔，走三代腰补注册（0.1.2/0.1.5 实例
+  // installSection / register；0.1.0/0.1.1 模块级 installSettingsSection）。
+  if (typeof compositionEntry.allowUnifiedDiff !== 'object' && typeof compositionEntry.allowCodexPatch !== 'object') {
+    installSettingsCompat(ctx, SETTINGS_NAMESPACE, Config, compositionEntry, {
+      setSource: (current) => { readSource = current },
+      onChange: () => { rejudge() },
+    })
+  }
+
   // 0.1.7+: 只有 volatile 字段变更才走这里（不 remount）；普通字段变更会整体
   // remount 插件，新一次 `apply` 自然读到全部新值。等值变更宿主不通知。
-  ctx.on('loader/volatile-update', () => {
-    rejudge()
-  })
+  // 老宿主不声明该事件——ctx.on 对未知事件名在极老 cordis 上的行为未知，
+  // 包一层 try/catch 让静默无更新成为唯一代价。
+  try {
+    ctx.on('loader/volatile-update', () => {
+      rejudge()
+    })
+  } catch {
+    // pre-0.1.7 host: no volatile updates; normal config edits remount the plugin.
+  }
 }

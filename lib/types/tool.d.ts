@@ -38,9 +38,11 @@ export type ApplyPatchResult = {
     diffs: ResultDiff[];
 };
 /**
- * Build the (frozen) tool definition. The tool name is passed in resolved
+/** Build the (frozen) tool definition. The tool name is passed in resolved
  * form so registration-side rename avoidance can mint variant names.
+ * Returns `null` when the host line's dsh-tools lacks `defineTool` — the
+ * caller skips registration instead of failing the loader entry.
  */
-export declare function buildApplyPatchTool(toolName: string, ctx: Context, cfg: ResolvedConfig): ToolDefinition;
+export declare function buildApplyPatchTool(toolName: string, ctx: Context, cfg: ResolvedConfig): ToolDefinition | null;
 /** Model-facing text: grouped added → modified → deleted listing. */
 export declare function formatResultText(value: ApplyPatchResult): string;

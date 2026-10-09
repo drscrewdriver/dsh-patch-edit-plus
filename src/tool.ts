@@ -8,7 +8,7 @@
  * @module dsh-patch-edit-plus/tool
  */
 
-import { defineTool } from '@deepseek-ai/dsh-tools'
+import * as dshToolsNamespace from '@deepseek-ai/dsh-tools'
 import type { ToolResult, ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { Context } from '@deepseek-ai/cordis'
 import type { ResolvedConfig } from './config.js'
@@ -52,16 +52,31 @@ const ROUTING_GUIDE = [
 ].join('\n')
 
 /**
- * Build the (frozen) tool definition. The tool name is passed in resolved
+/** Build the (frozen) tool definition. The tool name is passed in resolved
  * form so registration-side rename avoidance can mint variant names.
+ * Returns `null` when the host line's dsh-tools lacks `defineTool` — the
+ * caller skips registration instead of failing the loader entry.
  */
-export function buildApplyPatchTool(toolName: string, ctx: Context, cfg: ResolvedConfig): ToolDefinition {
+export function buildApplyPatchTool(toolName: string, ctx: Context, cfg: ResolvedConfig): ToolDefinition | null {
   const styles = [
     cfg.allowUnifiedDiff ? 'git/unified diff (default)' : null,
     cfg.allowCodexPatch ? 'Codex apply_patch syntax' : null,
   ].filter(style => style !== null).join(' and ')
 
-  const definition = defineTool({
+// 唯一的宿主包 value import 必须走 namespace 软取：静态 named import 一个
+// 某代缺失的导出会在 ESM link 期直接炸死整个 loader entry（SessionSeq 教训）。
+type DshToolsModule = typeof import('@deepseek-ai/dsh-tools')
+const dshToolsSoft = dshToolsNamespace as unknown as Partial<DshToolsModule> & {
+  default?: Partial<DshToolsModule>
+}
+const defineToolImpl: DshToolsModule['defineTool'] | undefined = dshToolsSoft.defineTool
+  ?? dshToolsSoft.default?.defineTool
+if (defineToolImpl === undefined) {
+  console.warn('[dsh-patch-edit-plus] @deepseek-ai/dsh-tools has no defineTool export on this host line; the apply_patch tool is not available.')
+  return null
+}
+
+const definition = defineToolImpl({
     name: toolName,
     description: `Apply a patch-style change to one or more text files, all-or-nothing: every hunk is verified against current file content first, and nothing is written unless the whole patch applies. Accepts ${styles}. `
       + 'Add, update (multi-hunk), delete and move/rename operations are supported. Pass dryRun: true to validate without writing.\n' + ROUTING_GUIDE,

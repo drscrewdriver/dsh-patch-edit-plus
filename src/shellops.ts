@@ -46,6 +46,16 @@ export function moveTemplate(cfg: ResolvedConfig): string {
   return cfg.moveCommand ?? (resolveDialect(cfg) === 'pwsh' ? PWSH_MOVE : POSIX_MOVE)
 }
 
+/** Raw path for shell env vars; old dsh-fs lines lack processPath — fall back to the target's encoded path. */
+function targetPath(ctx: Context, target: FsTarget): string {
+  try {
+    if (typeof (ctx.fs as unknown as { processPath?: unknown }).processPath === 'function') {
+      return (ctx.fs as unknown as { processPath: (t: FsTarget) => string }).processPath(target)
+    }
+  } catch { /* strict proxy or absent service */ }
+  return ((target as unknown as { path?: string }).path ?? target.displayPath)
+}
+
 /** Structurally resolve `ctx.shell` without assuming the service is mounted. */
 export function resolveShell(ctx: Context): ShellExecutor | undefined {
   try {
@@ -76,7 +86,7 @@ export async function removeFile(ctx: Context, exec: ToolRunContext, cfg: Resolv
   const shell = requireShell(ctx, cfg)
   const request: ShellExecRequest = {
     command: deleteTemplate(cfg),
-    env: { DSH_PATCH_TARGET: ctx.fs.processPath(target) },
+    env: { DSH_PATCH_TARGET: targetPath(ctx, target) },
     signal: exec.signal,
     timeoutMs: SHELL_TIMEOUT_MS,
     sandboxPolicy,
@@ -90,7 +100,7 @@ export async function moveFile(ctx: Context, exec: ToolRunContext, cfg: Resolved
   const shell = requireShell(ctx, cfg)
   const request: ShellExecRequest = {
     command: moveTemplate(cfg),
-    env: { DSH_PATCH_SOURCE: ctx.fs.processPath(source), DSH_PATCH_TARGET: ctx.fs.processPath(target) },
+    env: { DSH_PATCH_SOURCE: targetPath(ctx, source), DSH_PATCH_TARGET: targetPath(ctx, target) },
     signal: exec.signal,
     timeoutMs: SHELL_TIMEOUT_MS,
     sandboxPolicy,

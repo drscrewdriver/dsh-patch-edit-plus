@@ -56,7 +56,8 @@ export function registerApplyPatchTool(ctx: Context, cfg: ResolvedConfig, logger
     resolvedName = found
   }
 
-  const definition: ToolDefinition = buildApplyPatchTool(resolvedName, ctx, cfg)
+  const definition = buildApplyPatchTool(resolvedName, ctx, cfg)
+  if (definition === null) return null
   try {
     return tools.register(definition)
   } catch (error: unknown) {
