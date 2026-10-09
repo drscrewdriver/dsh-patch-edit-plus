@@ -78,7 +78,8 @@ export function installSettingsCompat(
   entry: PluginConfig,
   hooks: SettingsHooks,
 ): void {
-  ctx.inject(['settings'], (settingsCtx) => {
+  try {
+    ctx.inject(['settings'], (settingsCtx) => {
     const settings = (settingsCtx as unknown as { settings?: SettingsFace }).settings
       ?? (settingsCtx as unknown as SettingsFace)
     if (typeof settings?.installSection === 'function') {
@@ -110,5 +111,9 @@ export function installSettingsCompat(
     }).catch(() => {
       // Module absent on this line — no settings surface, tool still works.
     })
-  })
+    })
+  } catch (error) {
+    // Hosts without the sub-inject seam (very old cordis) skip settings entirely.
+    console.warn('[dsh-patch-edit-plus] settings sub-inject unavailable on this host line:', error)
+  }
 }

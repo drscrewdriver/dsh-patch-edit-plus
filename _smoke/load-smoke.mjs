@@ -94,6 +94,7 @@ const HOST_SERVICES = {
 }
 const declaredServices = new Set(inject)
 const volatileListeners = []
+const settingsInjects = []
 
 const rawCtx = {
   logger: { info: () => {}, warn: () => {}, error: () => {} },
@@ -102,6 +103,7 @@ const rawCtx = {
   // stub. The plugin subscribes to volatile-field updates instead, and the
   // registry below lets the smoke drive a committed change end-to-end.
   on: (event, fn) => { if (event === 'loader/volatile-update') volatileListeners.push(fn) },
+  inject: (deps, cb) => { settingsInjects.push({ deps, cb }) },
   get: () => undefined,
   waterfall: async (event, target, exec, next) => { waterfallCalls.push(event); return next() },
   emit: (event, ...args) => emitCalls.push([event, ...args]),
@@ -203,7 +205,7 @@ try {
   const externals = [...entry.matchAll(/from\s+['"]([^'"]+)['"]/g)].map(m => m[1])
     .concat([...entry.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]))
   const bare = externals.filter(s => !s.startsWith('.') && !s.startsWith('/'))
-  const allowed = new Set(['@deepseek-ai/cordis', '@deepseek-ai/dsh-fs', '@deepseek-ai/dsh-shell', '@deepseek-ai/dsh-tools', '@deepseek-ai/dsh-sandbox', '@deepseek-ai/schemastery'])
+  const allowed = new Set(['@deepseek-ai/cordis', '@deepseek-ai/dsh-fs', '@deepseek-ai/dsh-shell', '@deepseek-ai/dsh-tools', '@deepseek-ai/dsh-sandbox', '@deepseek-ai/dsh-settings', '@deepseek-ai/schemastery'])
   const extra = bare.filter(s => !allowed.has(s))
   if (extra.length > 0) throw new Error(`undeclared runtime externals: ${extra.join(', ')}`)
   ok('runtime externals ⊆ declared peers + schemastery', bare.join(', ') || '(type-only, erased)')
@@ -218,6 +220,51 @@ try {
   if (/disabled:\s|replaced:|\brename\b/.test(code)) throw new Error('cordis.patch.yml is not a pure insert')
   ok('assembly manifest present; cordis.patch.yml is a pure insert')
 } catch (error) { bad('assembly manifest', error) }
+
+
+// ── 老宿主缺席场景（0.1.0/0.1.1 形状）：设置子注入不发火、事件面缺席 ──
+function oldHostCtx(onImpl) {
+  const reg2 = new Map()
+  const hostServices = HOST_SERVICES
+  const ctx2 = new Proxy({
+    logger: { info: () => {}, warn: () => {}, error: () => {} },
+    effect: (fn) => fn(),
+    on: onImpl,
+    get: () => undefined,
+    waterfall: async (event, target, exec, next) => next(),
+    emit: () => {},
+    inject: (deps, cb) => { settingsInjects.push({ deps, cb }) },
+  }, {
+    get(target, prop, receiver) {
+      if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver)
+      if (typeof prop === 'string' && Object.hasOwn(hostServices, prop)) return hostServices[prop]
+      return undefined
+    },
+  })
+  return { ctx2, reg2 }
+}
+
+try {
+  settingsInjects.length = 0
+  const before = registered.size
+  const { ctx2, reg2 } = oldHostCtx(() => {}) // 无 volatile-update 事件面
+  apply(ctx2, {})
+  if (!registered.has('apply_patch') || registered.size !== before + 1) throw new Error('tool not registered on old-host shape: ' + [...registered.keys()].join(','))
+  ok('old-host shape (plain entry): tool registers via the same apply')
+} catch (error) { bad('old-host absence (no volatile-update)', error) }
+
+try {
+  const { ctx2, reg2 } = oldHostCtx(() => { throw new Error('unknown event') }) // ctx.on 直接 throw
+  apply(ctx2, {})
+  if (!registered.has('apply_patch_1')) throw new Error('apply must survive a throwing ctx.on: ' + [...registered.keys()].join(','))
+  ok('old-host shape (ctx.on throws): degrade silently')
+} catch (error) { bad('old-host absence (throwing ctx.on)', error) }
+
+try {
+  settingsInjects.length = 0
+  apply(ctx, {}) // 重新挂回 0.1.7 stub 的工具
+} catch (error) { bad('re-mount after old-host scenarios', error) }
+
 
 console.log(failures === 0 ? 'SMOKE PASS' : 'SMOKE FAIL')
 process.exit(failures === 0 ? 0 : 1)
