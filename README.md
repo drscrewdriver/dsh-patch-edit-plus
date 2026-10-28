@@ -6,7 +6,7 @@ Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepsee
 
 ## DSH version compatibility
 
-**v0.4.0 is a single release covering the whole host line**: one version serves every DSH from `0.1.0-rc.2` to `0.2.1-rc.3` (all 18 rc releases plus desktop). The four retired lines (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`, and the `main` split-line scheme) are gone; after publishing, the npm dist-tags `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` and `dsh-0.1.2` all point to 0.4.0.
+**v0.4.0 is a single release covering the whole host line**: one version serves every DSH from `0.1.0-rc.2` to `0.2.1-rc.4` (all 19 rc releases plus desktop). The four retired lines (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`, and the `main` split-line scheme) are gone; after publishing, the npm dist-tags `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` and `dsh-0.1.2` all point to 0.4.0.
 
 | DSH version | Status | Notes |
 |---|---|---|
