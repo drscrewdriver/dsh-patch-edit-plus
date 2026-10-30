@@ -6,7 +6,7 @@ Patch-basierte Dateibearbeitung für [DeepSeek Harness (DSH)](https://github.com
 
 ## DSH-Versionskompatibilität
 
-**v0.4.0 ist eine einzelne Version, die die gesamte Host-Linie abdeckt**: eine Version bedient alle DSH von `0.1.0-rc.2` bis `0.2.1-rc.4` (alle 19 RCs plus Desktop). Die vier eingestellten Linien (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` und das `main`-Aufteilungsschema) sind retired; nach der Veröffentlichung zeigen die npm-Dist-Tags `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` und `dsh-0.1.2` alle auf 0.4.0.
+**v0.4.0 ist eine einzelne Version, die die gesamte Host-Linie abdeckt**: eine Version bedient alle DSH von `0.1.0-rc.2` bis `0.2.1-rc.5` (alle 20 RCs plus Desktop). Die vier eingestellten Linien (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` und das `main`-Aufteilungsschema) sind retired; nach der Veröffentlichung zeigen die npm-Dist-Tags `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` und `dsh-0.1.2` alle auf 0.4.0.
 
 | DSH-Version | Status | Hinweise |
 |---|---|---|

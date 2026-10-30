@@ -6,7 +6,7 @@ Français | [English](./README.md) | [简体中文](./README.zh.md) | [日本語
 
 ## Compatibilité des versions de DSH
 
-**La v0.4.0 est une version unique couvrant toute la ligne d'hôtes** : une seule version sert tous les DSH de `0.1.0-rc.2` à `0.2.1-rc.4` (les 19 rc) plus desktop). Les quatre anciennes lignes (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` et le schéma de scission `main`) sont retirées ; après publication, les dist-tags npm `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` et `dsh-0.1.2` pointeront tous vers 0.4.0.
+**La v0.4.0 est une version unique couvrant toute la ligne d'hôtes** : une seule version sert tous les DSH de `0.1.0-rc.2` à `0.2.1-rc.5` (les 20 rc) plus desktop). Les quatre anciennes lignes (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7` et le schéma de scission `main`) sont retirées ; après publication, les dist-tags npm `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` et `dsh-0.1.2` pointeront tous vers 0.4.0.
 
 | Version de DSH | Statut | Notes |
 |---|---|---|
