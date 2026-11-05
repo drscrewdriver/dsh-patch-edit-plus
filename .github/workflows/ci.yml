@@ -1,8 +1,6 @@
-# CI baseline for dsh-patch-edit-plus.
-# Generated 2026-11-05. Chain: install -> typecheck -> lint -> test -> build -> smoke.
-# Rationale: this repo is an owned DSH plugin and previously had no workflow;
-# publish.yml is intentionally NOT included (npm secret is not uploaded to
-# GitHub Actions; releases stay manual until Trusted Publishing is configured).
+# CI baseline for dsh-patch-edit-plus - npm variant (remote main ships package-lock.json only).
+# Generated 2026-11-05 (v2: switched from pnpm to npm after cloud run showed
+# the working-tree pnpm-lock.yaml was never committed to main).
 
 name: CI
 
@@ -20,15 +18,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run typecheck
-      - run: pnpm run lint
-      - run: pnpm test
-      - run: pnpm run build
-      - run: pnpm run smoke
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: npm run smoke
