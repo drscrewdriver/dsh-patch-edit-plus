@@ -1,6 +1,6 @@
 {
   "name": "dsh-patch-edit-plus",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move,  (declarative volatile settings).",
   "type": "module",
   "repository": {
@@ -58,7 +58,7 @@
   },
   "engines": {
     "node": ">=20",
-    "dsh": "0.1.0-rc.2 || 0.1.0-rc.3 || 0.1.0-rc.6 || 0.1.0-rc.7 || 0.1.0-rc.8 || 0.1.1-rc.1 || 0.1.1-rc.2 || 0.1.2-rc.1 || 0.1.5-rc.1 || 0.1.5-rc.2 || 0.1.5-rc.3 || 0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5"
+    "dsh": ">=0.1.1-rc.2 <0.3.0"
   },
   "license": "MIT",
   "keywords": [
