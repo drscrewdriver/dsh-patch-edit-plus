@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "パッチ編集",
+    "description": "DSH 用のパッチ式ファイル編集：単一の apply_patch ツールが既定で git/unified diff を受け入れ、任意で Codex apply_patch 構文も選べる。固まり全体を一度だけ適用し、現在のファイル内容と照合してから書き込む。読込前置の意図、サンドボックス配慮の削除・移動、任意の dry-run 事前検査を備える。"
+  }
+}

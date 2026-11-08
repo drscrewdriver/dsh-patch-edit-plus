@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "补丁式编辑",
+    "description": "为 DSH 提供补丁式文件编辑：单个 apply_patch 工具，默认接受 git/unified diff，另可选 Codex apply_patch 语法；整块应用，先按当前文件内容校验再写入，含读后写意图、沙箱感知的删除与移动，以及可选的 dry-run 预检。"
+  }
+}

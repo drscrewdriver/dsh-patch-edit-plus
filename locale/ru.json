@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Редактор по patch",
+    "description": "Редактирование файлов по patch для DSH: один tool apply_patch принимает git/unified diff по умолчанию и syntax Codex apply_patch по выбору, применяется целиком или ничего против проверенного содержимого файла; читает перед записью; delete/move учитывает sandbox; может сначала сделать dry-run проверку."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Édition par patch",
+    "description": "Édition de fichiers par patch pour DSH : un seul outil apply_patch qui accepte le diff git/unified par défaut et la syntaxe Codex apply_patch en option ; appliqué en bloc ou pas du tout, après vérification du contenu du fichier ; lit avant d'écrire, supprime et déplace en tenant compte de la sandbox, et peut d'abord faire un contrôle dry-run."
+  }
+}

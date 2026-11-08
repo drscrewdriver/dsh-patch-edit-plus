@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Editor di patch",
+    "description": "Editing a patch per DSH: un solo tool apply_patch che accetta il diff git/unified per default e la sintassi Codex apply_patch come opzione; applicato in tutto o in niente, dopo la verifica del contenuto del file; legge prima di scrivere, cancella e sposta tenendo conto della sandbox, e può prima fare un controllo dry-run."
+  }
+}
