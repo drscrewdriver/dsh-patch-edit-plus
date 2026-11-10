@@ -17,6 +17,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { resolveConfig } from './config.js'
 import type { Config as PluginConfig } from './config.js'
 import { registerApplyPatchTool } from './register.js'
+import { registerPatchGuidance } from './guidance.js'
 import { installSettingsCompat } from './compat.js'
 import { readVolatileBoolean } from './config.js'
 import { Config } from './config.js'
@@ -70,6 +71,7 @@ export function apply(ctx: Context, config?: PluginConfig): void {
   let readSource: () => PluginConfig = () => compositionEntry
 
   let disposer: (() => void) | null = null
+  let guidanceDisposer: (() => void) | null = null
   let registeredKey: string | null = null
 
   const rejudge = (): void => {
@@ -77,7 +79,18 @@ export function apply(ctx: Context, config?: PluginConfig): void {
     const key = JSON.stringify(next)
     if (key === registeredKey) return
     disposer?.()
-    disposer = registerApplyPatchTool(ctx, next) ?? null
+    disposer = null
+    guidanceDisposer?.()
+    guidanceDisposer = null
+    // `auto` guidance stays silent when rename avoidance had to step aside:
+    // another patch tool already owns the preferred name and carries its own
+    // guidance, so a second paragraph would only fight it.
+    let registeredName: string | null = null
+    disposer = registerApplyPatchTool(ctx, next, undefined, (name) => { registeredName = name }) ?? null
+    if (disposer !== null && registeredName !== null) {
+      const wanted = next.guidance === 'on' || (next.guidance === 'auto' && registeredName === next.toolName)
+      if (wanted) guidanceDisposer = registerPatchGuidance(ctx, registeredName, next.guidance)
+    }
     registeredKey = key
   }
 
@@ -86,6 +99,8 @@ export function apply(ctx: Context, config?: PluginConfig): void {
     return () => {
       disposer?.()
       disposer = null
+      guidanceDisposer?.()
+      guidanceDisposer = null
       registeredKey = null
     }
   })

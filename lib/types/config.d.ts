@@ -13,6 +13,15 @@ export type ConflictPolicy = 'rename' | 'skip' | 'fail';
 export type DeleteBackend = 'shell' | 'none';
 /** Shell command dialect for the constant delete/move templates. */
 export type ShellDialect = 'auto' | 'posix' | 'pwsh';
+/**
+ * System-prompt guidance mode.
+ * - `auto` — register the patch guidance unless the tool had to be renamed
+ *   (another patch tool already owns the preferred name, e.g. a host-shipped
+ *   `apply_patch`), so two guidance texts never compete.
+ * - `on` — always register it.
+ * - `off` — never register it; the tool description keeps the routing line.
+ */
+export type GuidanceMode = 'auto' | 'on' | 'off';
 /** Deployment-owned configuration. */
 export interface Config {
     /** Model-facing tool name. Defaults to `apply_patch`. */
@@ -37,6 +46,8 @@ export interface Config {
     deleteCommand?: string;
     /** Custom move command template; paths arrive via env `DSH_PATCH_SOURCE`/`DSH_PATCH_TARGET`. */
     moveCommand?: string;
+    /** System-prompt guidance registration. Defaults to `auto`. */
+    guidance?: GuidanceMode;
     /** Treat `apply_patch` calls as dry runs unless the call passes `dryRun: false`. Defaults to false. */
     dryRunByDefault?: boolean;
     /** Allow patch paths to traverse symbolic links. Defaults to false (symlinks are rejected). */
@@ -59,6 +70,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
     deleteCommand: z<string, string, "plain">;
     moveCommand: z<string, string, "plain">;
+    guidance: z<"auto" | "on" | "off", "auto" | "on" | "off", "defined">;
     dryRunByDefault: z<boolean, boolean, "defined">;
     followSymlinks: z<boolean, boolean, "defined">;
     maxFiles: z<number, number, "defined">;
@@ -74,6 +86,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     shellDialect: z<"auto" | "posix" | "pwsh", "auto" | "posix" | "pwsh", "defined">;
     deleteCommand: z<string, string, "plain">;
     moveCommand: z<string, string, "plain">;
+    guidance: z<"auto" | "on" | "off", "auto" | "on" | "off", "defined">;
     dryRunByDefault: z<boolean, boolean, "defined">;
     followSymlinks: z<boolean, boolean, "defined">;
     maxFiles: z<number, number, "defined">;
@@ -91,6 +104,7 @@ export interface ResolvedConfig {
     shellDialect: ShellDialect;
     deleteCommand?: string;
     moveCommand?: string;
+    guidance: GuidanceMode;
     dryRunByDefault: boolean;
     followSymlinks: boolean;
     maxFiles: number;

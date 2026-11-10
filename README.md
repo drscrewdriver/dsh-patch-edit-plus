@@ -21,12 +21,12 @@ Tool capabilities are identical on every line: one `apply_patch` tool, git/unifi
 
 ## Why patch at all? (tool routing guide)
 
-The tool description explicitly routes the model:
+Two surfaces route the model, mirroring what DSH 0.2.2-rc.1 ships for its own built-in `apply_patch`:
 
-- **Single small change in one already-read file** → prefer the native `edit` tool (a patch costs more tokens than a literal edit).
-- **Small change inside a LARGE file** → `apply_patch` (no need to echo the whole file).
-- **Batched changes across MANY files** → `apply_patch` (one call, verified atomically).
-- **New file with substantial content / delete / rename** → `apply_patch`.
+- **Tool description** — one line, repeated on every call: prefer `apply_patch` over separate `edit` calls when a change spans several files, several separated regions of one file, or adds/deletes/moves files. A single small replacement in an already-read file is still cheaper through the native `edit` tool.
+- **System-prompt section** (`plugin:patch-edit-plus:apply_patch`, order 1350, right after `tool:edit`) — the full guidance: give every hunk enough surrounding context lines to match exactly one place in the current file; every hunk is matched against the current content before anything is written, so a rejected patch changes nothing and retrying with a corrected patch beats falling back to many small edits; once writing starts, operations stop at the first failure.
+
+The section is emitted only while the tool is registered in the acting scope, and `auto` skips it when rename avoidance had to step aside for another `apply_patch` (a host-shipped one, for example) so the two guidance texts never compete. `guidance: 'auto' | 'on' | 'off'` controls this; the default is `auto`.
 
 ## Installation
 
@@ -98,6 +98,7 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 | `deleteBackend` | `shell` | `shell` or `none` (Delete/Move return a structured error). |
 | `shellDialect` | `auto` | `auto` (pwsh on win32) / `posix` / `pwsh`. |
 | `deleteCommand` / `moveCommand` | built-in | Custom command templates. Paths still arrive **only via env** (`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`); never interpolate them into the command string. |
+| `guidance` | `auto` | System-prompt guidance: `auto` (skip when the tool had to be renamed), `on`, `off`. |
 | `dryRunByDefault` | `false` | Treat calls as dry runs unless `dryRun: false`. |
 | `followSymlinks` | `false` | Allow patch paths to traverse symlinks. |
 | `maxFiles` | `50` | Max file sections per patch. |

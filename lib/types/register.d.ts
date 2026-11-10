@@ -17,7 +17,10 @@ export interface LoggerFace {
 }
 /**
  * Resolve an unused tool name and register the frozen definition.
+ * @param onRegistered - called with the name actually registered; the caller
+ *   uses it to decide whether the system-prompt guidance should attach
+ *   (`auto` stays silent when rename avoidance had to step aside).
  * @returns the registration disposer, or `null` when registration was skipped.
  * @throws {@link PatchError} only under `conflictPolicy: 'fail'`.
  */
-export declare function registerApplyPatchTool(ctx: Context, cfg: ResolvedConfig, logger?: LoggerFace): (() => void) | null;
+export declare function registerApplyPatchTool(ctx: Context, cfg: ResolvedConfig, logger?: LoggerFace, onRegistered?: (name: string) => void): (() => void) | null;

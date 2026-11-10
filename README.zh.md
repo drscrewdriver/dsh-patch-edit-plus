@@ -21,12 +21,12 @@
 
 ## 工具路由指引（为什么该用谁）
 
-工具 description 内置了明确的路由规则：
+路由分两个面，形态对齐 DSH 0.2.2-rc.1 给自家内置 `apply_patch` 的做法：
 
-- **单个已读文件里的单点小改** → 优先原生 `edit`（patch 反而多花 token）。
-- **大文件里的小改动** → `apply_patch`（无需回显整个文件）。
-- **跨文件批量改动** → `apply_patch`（一次调用、原子验证）。
-- **新建大内容文件 / 删除 / 重命名** → `apply_patch`。
+- **工具 description** —— 每次调用都可见的一句话：当改动跨多个文件、同一文件的多个分离区域，或涉及新增/删除/移动文件时，优先用 `apply_patch` 而不是多次 `edit`；单个已读文件里的单点小替换仍然用原生 `edit` 更便宜。
+- **系统提示段**（`plugin:patch-edit-plus:apply_patch`，order 1350，紧跟在 `tool:edit` 之后）—— 完整指导：每个 hunk 给足上下文字段，确保只匹配文件中的一处；所有 hunk 在任何写入之前先对着当前内容匹配，因此被拒绝的 patch 不改变任何文件，修正后重试比退回多次小改更划算；一旦开始写入，首个失败即停。
+
+该段只在工具确实注册于当前作用域时输出；`auto` 在因重名避让而改名为其他名字时（例如宿主已自带 `apply_patch`）不再注入，避免两套提示互相竞争。`guidance: 'auto' | 'on' | 'off'` 控制此行为，默认为 `auto`。
 
 ## 安装
 
@@ -97,6 +97,7 @@ dsh web --dump-config   # 确认插件行出现
 | `deleteBackend` | `shell` | `shell` 或 `none`（Delete/Move 返回结构化错误）。 |
 | `shellDialect` | `auto` | `auto`（win32 上 pwsh）/ `posix` / `pwsh`。 |
 | `deleteCommand` / `moveCommand` | 内置 | 自定义命令模板。路径仍然**只经 env** 传入（`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`），请勿把路径插值进命令串。 |
+| `guidance` | `auto` | 系统提示段：`auto`（工具被改名时跳过）/ `on` / `off`。 |
 | `dryRunByDefault` | `false` | 默认按 dry run 处理，除非调用显式传 `dryRun: false`。 |
 | `followSymlinks` | `false` | 允许补丁路径穿越符号链接。 |
 | `maxFiles` | `50` | 单补丁最大文件段数。 |

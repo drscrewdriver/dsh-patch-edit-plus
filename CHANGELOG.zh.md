@@ -1,5 +1,18 @@
 # 更新日志
 
+## [0.4.8] — 2026-11-10
+
+### 新增
+
+- **在所有支持的宿主线注入 patch 路由段（系统提示层）。** DSH 0.2.2-rc.1 是第一个自带 `apply_patch` 的宿主（`dsh-tool-fs`，配置项 `applyPatch`），并首次配上 `tool:apply_patch` 提示段（order 为 `TOOL_APPLY_PATCH`，1350）与“优先于多次 edit”的 description 一句。更早的宿主两者都没有，插件提供的 patch 工具只能靠每次调用附带的 schema 描述。本版改为注册 `plugin:patch-edit-plus:apply_patch`（同序号，紧跟 `tool:edit`），并在工具 description 里带上同一句路由提示。
+- **取自 0.2.2**：`prefer apply_patch over separate edit calls` 的优先口径、hunk 上下文行建议、`被拒绝的 patch 不改变任何文件`、以及“工具不在作用域时输出空文本”。**未取**：`not rolled back`——本插件的验证是全有或全无，但写入阶段是顺序执行、不回滚，所以提示只陈述事实。
+- 新增配置项 `guidance: 'auto' | 'on' | 'off'`（默认 `auto`）。`auto` 仅在工具保持配置名时注册提示段；若因重名避让被改名（例如宿主已自带 `apply_patch`），不再注入第二套提示。
+
+### 兼容性
+
+- 提示段序号按 `TOOL_APPLY_PATCH` → `TOOL_EDIT + 50` → `1350` 逐级回退：`TOOL_APPLY_PATCH` 从 0.2.2 才有，`0.1.0-rc.8` 连 `getSectionOrder` 都没有，而非有限数会让 `systemPrompt.section()` 直接抛出。`systemPrompt` 服务经 cordis 注入门探测，**不**加入 `inject`，因此没有该服务的宿主照常加载，仅缺少提示段。
+- 本版尚未声明适配 DSH 0.2.2-rc.1：其 peer 枚举与“宿主内置 `apply_patch` 共存”不在本次范围内。
+
 0.4.4：宿主枚举补票 DSH 0.2.1-rc.3（声明面换代，契约零改动）。
 
 

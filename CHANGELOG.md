@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.8] — 2026-11-10
+
+### Added
+
+- **Patch routing guidance as a system-prompt section on every supported host.** DSH 0.2.2-rc.1 is the first host that ships its own `apply_patch` (`dsh-tool-fs`, config `applyPatch`) together with a `tool:apply_patch` prompt section at `TOOL_APPLY_PATCH` (1350) and a description line that says to prefer it over separate edit calls. Older hosts ship neither, so a plugin-provided patch tool was described only by its per-call schema. The plugin now registers `plugin:patch-edit-plus:apply_patch` (same order, right after `tool:edit`) and carries the same one-line routing hint in the tool description.
+- **Borrowed from 0.2.2**: the "prefer apply_patch over separate edit calls" phrasing, the hunk-context advice, "a rejected patch changes nothing", and the scope-aware empty text while the tool is absent. **Not borrowed**: "not rolled back" — verification here is all-or-nothing but the write phase is sequential, so the guidance claims only what is true.
+- New `guidance: 'auto' | 'on' | 'off'` config (default `auto`). `auto` registers the section only when the tool kept its configured name; when rename avoidance had to step aside for another `apply_patch`, no second guidance text is injected.
+
+### Compatibility
+
+- The section order falls back through `TOOL_APPLY_PATCH` → `TOOL_EDIT + 50` → `1350`: `TOOL_APPLY_PATCH` only exists from 0.2.2, and `0.1.0-rc.8` has no `getSectionOrder` at all, while a non-finite order makes `systemPrompt.section()` throw. The `systemPrompt` service is probed through the cordis inject gate and never added to `inject`, so a host without it keeps loading with only the guidance absent.
+- DSH 0.2.2-rc.1 itself is not declared yet: its peer enumeration and coexistence with the host-shipped `apply_patch` are out of scope for this release.
+
 0.4.4: host enumeration addendum for DSH 0.2.1-rc.3 (declaration-only bump; contract plane zero diff).
 
 ## 0.4.3 (2026-10-18)

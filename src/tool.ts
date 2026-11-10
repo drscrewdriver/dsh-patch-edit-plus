@@ -1,10 +1,10 @@
 /**
  * The single model-facing `apply_patch` tool definition.
  *
- * The description carries an explicit routing guide so the model reaches for
- * the native `edit` tool on cheap single-point changes instead of paying for
- * a patch, and reserves `apply_patch` for large-file small edits, cross-file
- * batch edits, creation, deletion and renames.
+ * The description carries the short routing line; the long-form guidance is a
+ * system-prompt section (see guidance.ts) so it survives across turns instead
+ * of only riding on the per-call tool schema. Before 0.2.2 no host shipped
+ * either surface for `apply_patch`, which is why the plugin has to supply both.
  * @module dsh-patch-edit-plus/tool
  */
 
@@ -13,6 +13,7 @@ import type { ToolResult, ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { Context } from '@deepseek-ai/cordis'
 import type { ResolvedConfig } from './config.js'
 import { PatchError, codexDisabledError, limitError, unifiedDisabledError } from './errors.js'
+import { PATCH_ROUTING_LINE } from './guidance.js'
 import { detectFormat } from './detect.js'
 import { resolveSandboxPolicy } from './policy.js'
 import { parseCodexPatch } from './parse/codex.js'
@@ -43,12 +44,7 @@ export type ApplyPatchResult = {
 }
 
 const ROUTING_GUIDE = [
-  'When to use which editing tool:',
-  '- Single small change in ONE already-read file: prefer the native edit tool (cheaper than a patch).',
-  '- apply_patch is the right choice when: (a) a SMALL change sits inside a LARGE file (a patch avoids echoing the whole file), '
-    + '(b) the same call must change MANY files at once (batch), (c) a new file with substantial content is created, '
-    + '(d) a file is deleted or renamed, or (e) several disjoint spots in one file change at once.',
-  '- Do not use apply_patch for trivial one-line single-file edits when the native edit tool is available.',
+  PATCH_ROUTING_LINE,
 ].join('\n')
 
 /**

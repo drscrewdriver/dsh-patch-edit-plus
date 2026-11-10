@@ -1,10 +1,10 @@
 /**
  * The single model-facing `apply_patch` tool definition.
  *
- * The description carries an explicit routing guide so the model reaches for
- * the native `edit` tool on cheap single-point changes instead of paying for
- * a patch, and reserves `apply_patch` for large-file small edits, cross-file
- * batch edits, creation, deletion and renames.
+ * The description carries the short routing line; the long-form guidance is a
+ * system-prompt section (see guidance.ts) so it survives across turns instead
+ * of only riding on the per-call tool schema. Before 0.2.2 no host shipped
+ * either surface for `apply_patch`, which is why the plugin has to supply both.
  * @module dsh-patch-edit-plus/tool
  */
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';

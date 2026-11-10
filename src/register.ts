@@ -24,10 +24,13 @@ const MAX_RENAME_ATTEMPTS = 9
 
 /**
  * Resolve an unused tool name and register the frozen definition.
+ * @param onRegistered - called with the name actually registered; the caller
+ *   uses it to decide whether the system-prompt guidance should attach
+ *   (`auto` stays silent when rename avoidance had to step aside).
  * @returns the registration disposer, or `null` when registration was skipped.
  * @throws {@link PatchError} only under `conflictPolicy: 'fail'`.
  */
-export function registerApplyPatchTool(ctx: Context, cfg: ResolvedConfig, logger?: LoggerFace): (() => void) | null {
+export function registerApplyPatchTool(ctx: Context, cfg: ResolvedConfig, logger?: LoggerFace, onRegistered?: (name: string) => void): (() => void) | null {
   const log: LoggerFace = logger ?? resolveLogger(ctx)
   const tools = ctx.tools
   const base = cfg.toolName
@@ -58,7 +61,9 @@ export function registerApplyPatchTool(ctx: Context, cfg: ResolvedConfig, logger
   const definition = buildApplyPatchTool(resolvedName, ctx, cfg)
   if (definition === null) return null
   try {
-    return tools.register(definition)
+    const disposer = tools.register(definition)
+    onRegistered?.(resolvedName)
+    return typeof disposer === 'function' ? disposer : null
   } catch (error: unknown) {
     if (cfg.conflictPolicy === 'fail') throw error
     const detail = error instanceof Error ? error.message : String(error)
