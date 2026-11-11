@@ -31,6 +31,39 @@ function makePolicyService(policy: SandboxExecutionPolicy): { face: SandboxPolic
 }
 
 describe('apply_patch carries the per-call sandbox policy', () => {
+  describe.each(['unified', 'codex'] as const)('%s paths outside the workspace', (format) => {
+    function outsidePatch(path: string): string {
+      return format === 'codex'
+        ? `*** Begin Patch\n*** Update File: ${path}\n@@\n-x\n+y\n*** End Patch`
+        : `--- ${path}\n+++ ${path}\n@@ -1,1 +1,1 @@\n-x\n+y\n`
+    }
+
+    it.each(['/elsewhere/a.txt', '../elsewhere/a.txt'])('permits %s with danger-full-access and forwards the policy', async (path) => {
+      const policy: SandboxExecutionPolicy = { mode: 'danger-full-access', workspaceRoot: '/work' }
+      const service = makePolicyService(policy)
+      const rig = makeRig({ allowCodexPatch: true }, { '/elsewhere/a.txt': 'x\n' }, service.face)
+
+      await rig.runTool(outsidePatch(path))
+
+      expect(rig.fs.files.get('/elsewhere/a.txt')).toBe('y\n')
+      expect(rig.fs.writeCalls).toHaveLength(1)
+      expect(rig.fs.writeCalls[0].sandboxPolicy).toBe(policy)
+    })
+
+    it.each(['workspace-write', 'read-only'] as const)('still rejects outside paths in %s mode before writing', async (mode) => {
+      const policy: SandboxExecutionPolicy = { mode, workspaceRoot: '/work' }
+      const service = makePolicyService(policy)
+      const rig = makeRig({ allowCodexPatch: true }, { '/elsewhere/a.txt': 'x\n' }, service.face)
+
+      await expect(rig.runTool(outsidePatch('/elsewhere/a.txt'))).rejects.toMatchObject({
+        code: 'VALIDATION', message: /escapes the session workspace/,
+      })
+
+      expect(rig.fs.writeCalls).toHaveLength(0)
+      expect(rig.fs.files.get('/elsewhere/a.txt')).toBe('x\n')
+    })
+  })
+
   it('resolves the policy with the calling session in scope and forwards that exact policy to the write', async () => {
     const policy: SandboxExecutionPolicy = { mode: 'danger-full-access', workspaceRoot: '/work' }
     const service = makePolicyService(policy)
