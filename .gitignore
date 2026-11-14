@@ -1,4 +1,4 @@
 node_modules/
 .compat-*/
 *.log
-*.tsbuildinfo
+*.tsbuildinfo*.tgz
