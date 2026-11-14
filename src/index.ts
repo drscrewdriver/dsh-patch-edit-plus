@@ -21,6 +21,7 @@ import { registerPatchGuidance } from './guidance.js'
 import { installSettingsCompat } from './compat.js'
 import { readVolatileBoolean } from './config.js'
 import { Config } from './config.js'
+import { registerPatchCommand, describeSection } from './tui-command.js'
 
 /** 设置命名空间（0.1.5 及以下实例/模块注册面用；0.1.7+ 声明式线不消费）。 */
 export const SETTINGS_NAMESPACE = 'patch-edit-plus'
@@ -93,6 +94,19 @@ export function apply(ctx: Context, config?: PluginConfig): void {
     }
     registeredKey = key
   }
+
+  // ── dsh-tui 终端面：`/patch` ─────────────────────────────────────
+  // TUI 不加载设置卡：冲突策略/删除后端/引导开关在终端里既看不到也改不了。
+  // 命令层只读回显设置节（settings.describe() 里本节内容），不猜字段名。
+  ;(ctx as unknown as {
+    inject?: (deps: string[], cb: (scope: Context) => void) => void
+  }).inject?.(['commands'], (scope) => {
+    registerPatchCommand(scope, {
+      ns: SETTINGS_NAMESPACE,
+      line: (key, value) => `  ${key.padEnd(20)}  ${value}`,
+      section: () => describeSection(scope, SETTINGS_NAMESPACE),
+    })
+  })
 
   ctx.effect(() => {
     rejudge()
