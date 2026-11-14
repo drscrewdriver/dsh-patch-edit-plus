@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.10
+
+- 终端面（dsh-tui / Desktop 命令面板同源）：/patch 只读设置节面（config 摘要）。
+
 ## [0.4.8] — 2026-11-10
 
 ### Added
