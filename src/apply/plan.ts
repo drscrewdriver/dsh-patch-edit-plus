@@ -56,7 +56,11 @@ export async function buildPlan(ctx: Context, exec: ToolRunContext, parsed: Pars
 
   // Containment root: the fencing root when the call carries a policy, else the
   // session workspace. Mirrors the native write/edit tools' resolve options.
-  const rootTarget = cwd === undefined ? undefined : await fs.resolve(cwd, resolveOpts)
+  // Full access removes the containment fence, not the cwd used for relative paths.
+  // Keep the conservative workspace fence when no policy service is mounted.
+  const rootTarget = cwd === undefined || sandboxPolicy?.mode === 'danger-full-access'
+    ? undefined
+    : await fs.resolve(cwd, resolveOpts)
 
   const seen = new Map<string, string>()
 
