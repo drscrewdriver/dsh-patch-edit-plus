@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.11
+
+### Fixed
+
+- **`apply_patch` 在 `danger-full-access` 会话中仍拒绝工作区外路径**（PR #1，作者 Flash-Z；main 线已以 `e0392d2` 合入，本次移植到 compat-legacy 发布线）。planner 此前无条件把工作区作为围栏根，与宿主契约（`dsh-sandbox`: "danger-full-access bypasses confinement"）以及 native write/edit 的每调用策略解析不一致。现在仅当策略 `mode === 'danger-full-access'` 时移除围栏，相对路径解析仍用工作区 cwd；`workspace-write` / `read-only` / 无策略服务的保守围栏行为逐字不变。附 PR #1 的 8 个回归用例（unified/codex × 绝对/相对路径放行，两种受限模式写前拒绝）。
+
 ## 0.4.10
 
 - 终端面（dsh-tui / Desktop 命令面板同源）：/patch 只读设置节面（config 摘要）。
