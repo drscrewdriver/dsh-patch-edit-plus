@@ -60,8 +60,32 @@ export async function writeFile(
     return await (writeText as (t: FsTarget, c: string) => Promise<FsWriteOutcome>)(target, content)
   } catch (error: unknown) {
     if (error instanceof Error && error.name === 'PatchError') throw error
+    // A sandbox denial is NOT an I/O failure: the host's provider throws a
+    // structured `FS_SANDBOX_DENIED` that the tool layer turns into the
+    // model-facing `[sandbox: …]` marker plus an escalation hint. Wrapping it
+    // in an `IO` PatchError would swallow both, so the model would see a bare
+    // "failed to write" and lose the one signal that tells it to escalate.
+    // This matters more now that containment is delegated entirely to the
+    // provider (see `buildPlan`): every fence decision surfaces through here.
+    if (isSandboxDenial(error)) throw error
     throw ioError(`failed to write "${target.displayPath}"`, error)
   }
+}
+
+/**
+ * Whether an error is the mounted filesystem's sandbox refusal.
+ *
+ * Matched on the structured code the host throws (`FsError` with
+ * `code: 'FS_SANDBOX_DENIED'`, see `@deepseek-ai/dsh-fs-sandbox`), never on
+ * message text — the wording differs per mode ("file access denied under
+ * read-only mode" vs "… under workspace-write mode").
+ * @param error - the caught value.
+ * @returns true when the provider refused the mutation on policy grounds.
+ */
+function isSandboxDenial(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  const code = (error as { code?: unknown }).code
+  return code === 'FS_SANDBOX_DENIED'
 }
 
 /** Read one file's text (whole file). */

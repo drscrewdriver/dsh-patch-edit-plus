@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.12
+
+### Fixed
+
+- **`workspace-write` 下误拒宿主允许的临时目录写入**（issue #2）。planner 自建的围栏只认 `sandboxPolicy.workspaceRoot` 单根，而宿主 `@deepseek-ai/dsh-sandbox` 的 `writableRoots()` 在 `workspace-write` 下允许**三个根**（`workspaceRoot`、`/tmp`、`os.tmpdir()`）。后果：`workspace-write` 会话里对临时目录的 patch 被拒，错误文案却是「escapes the session workspace」——看起来像用户越界，实际是插件漏了根。临时目录写入在工具链里很常见，且这类「插件比宿主更严」的失败最难自查。
+  修法：**删掉 planner 侧的围栏**，把 containment 完全交给挂载的 fs provider 在 commit 时判定 —— 与宿主自己的 `apply_patch` 契约一致（`@deepseek-ai/dsh-tool-fs`：*"Sandbox containment is the provider's decision at commit, as for write and edit"*）。这样也消除了「宿主放宽策略、插件没跟上」的整类缺陷：`writableRoots` 现在是三根，将来若变，插件无需跟着改。
+  `followSymlinks` 拒绝与重复目标检查**保留在 planner**：前者是插件自己的配置策略，后者是 patch 自洽性，宿主 provider 都不做。
+  路径解析仍以策略的 workspace root 为 cwd，相对路径语义不变。
+
+### Changed
+
+- **沙箱拒绝不再被吞成 I/O 错误**。provider 抛出的结构化 `FS_SANDBOX_DENIED` 现在原样透传（`src/fsops.ts` 按 `code` 判定，不匹配文案），使工具层仍能附加面向模型的 `[sandbox: …]` 标记与提权提示。此前写入路径会把它包成 `PatchError('IO', "failed to write …")`，丢掉了唯一的「该提权」信号。containment 全部下沉到 provider 后，这条透传成为每个围栏决策的必经路径。
+
+### Tests
+
+- `tests/helpers.ts` 的 `MemoryFs.writeText` 现在按宿主 `SandboxedFileSystem.checkedTarget()` 的语义执行策略（含三根、`read-only` 全拒、`danger-full-access` 放行），使「越界仍被拒」的断言守住的是 provider 兜底，而不是已删除的 planner 围栏。
+- 新增 4 例：`workspace-write` 下 `/tmp/a.txt` 与 `/var/tmp/a.txt` 的 patch 必须成功（原缺陷的直接回归）。
+- 断言从 `VALIDATION / escapes the session workspace` 改为 `FS_SANDBOX_DENIED`；`path-safety` 的越界用例改为**带策略**运行（无策略即无围栏，是宿主的既定契约），并确保文件/父目录存在，使流程真正走到写入阶段而非被前置校验拦下。
+- 全量 117/117（原 113 + 新增 4），typecheck / lint / build / verify:source / smoke 全绿。
+
 ## 0.4.11
 
 ### Fixed

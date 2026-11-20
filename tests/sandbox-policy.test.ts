@@ -50,17 +50,37 @@ describe('apply_patch carries the per-call sandbox policy', () => {
       expect(rig.fs.writeCalls[0].sandboxPolicy).toBe(policy)
     })
 
+    // Containment is the provider's decision at commit (the plugin keeps no
+    // planner-side fence), so a refusal now surfaces as the host's structured
+    // FS_SANDBOX_DENIED rather than a plugin VALIDATION error. The plugin
+    // deliberately re-throws that shape untouched so the tool layer can still
+    // attach the model-facing `[sandbox: …]` marker and escalation hint.
     it.each(['workspace-write', 'read-only'] as const)('still rejects outside paths in %s mode before writing', async (mode) => {
       const policy: SandboxExecutionPolicy = { mode, workspaceRoot: '/work' }
       const service = makePolicyService(policy)
       const rig = makeRig({ allowCodexPatch: true }, { '/elsewhere/a.txt': 'x\n' }, service.face)
 
       await expect(rig.runTool(outsidePatch('/elsewhere/a.txt'))).rejects.toMatchObject({
-        code: 'VALIDATION', message: /escapes the session workspace/,
+        code: 'FS_SANDBOX_DENIED',
       })
 
       expect(rig.fs.writeCalls).toHaveLength(0)
       expect(rig.fs.files.get('/elsewhere/a.txt')).toBe('x\n')
+    })
+
+    // The regression that motivated removing the fence: the host allows three
+    // writable roots under `workspace-write` (workspaceRoot, /tmp, tmpdir()),
+    // so a temp-directory patch must succeed even though it is outside the
+    // session workspace.
+    it.each(['/tmp/a.txt', '/var/tmp/a.txt'])('permits %s under workspace-write (host multi-root policy)', async (path) => {
+      const policy: SandboxExecutionPolicy = { mode: 'workspace-write', workspaceRoot: '/work' }
+      const service = makePolicyService(policy)
+      const rig = makeRig({ allowCodexPatch: true }, { [path]: 'x\n' }, service.face)
+
+      await rig.runTool(outsidePatch(path))
+
+      expect(rig.fs.files.get(path)).toBe('y\n')
+      expect(rig.fs.writeCalls).toHaveLength(1)
     })
   })
 
