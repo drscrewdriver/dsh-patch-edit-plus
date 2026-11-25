@@ -14,9 +14,10 @@ export interface PatchFormScope {
     subscribe(listener: () => void): () => void;
     set(field: string, value: unknown): Promise<boolean>;
 }
-/** 客户端所需服务：slots（席位注册）+ configForms（entry 配置读写）。同族插件
- * （session-guard/perm-gate）同样显式声明——runner 只把声明了的服务提供给模块
- * 上下文，不声明时 `ctx.get('configForms')` 恒为 undefined，卡会渲染成 null。 */
+/** 客户端所需服务：slots 全世代都有，准声明；configForms 是 0.1.7+ 服务，
+ * **不准**进顶层 inject——在老宿主上声明缺失服务会把 client entry 永久挂起
+ * （web boot 拒渲染整树，「1 entry did not activate」家族教训）。configForms
+ * 走软读（strict proxy 直读 throw → try/catch 落 ctx.get），缺席时整卡隐藏。 */
 export declare const inject: string[];
 /** 轻量 ctx 类型（仅本客户端用到的方法；构建时类型被剥离）。 */
 interface SlotsFace {

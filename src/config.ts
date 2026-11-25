@@ -8,6 +8,7 @@
 
 import z from '@deepseek-ai/schemastery'
 import type { Volatile } from '@deepseek-ai/cosmokit'
+import { maybeVolatile } from './compat.js'
 
 /** What to do when the configured tool name is already taken at registration. */
 export type ConflictPolicy = 'rename' | 'skip' | 'fail'
@@ -17,6 +18,16 @@ export type DeleteBackend = 'shell' | 'none'
 
 /** Shell command dialect for the constant delete/move templates. */
 export type ShellDialect = 'auto' | 'posix' | 'pwsh'
+
+/**
+ * System-prompt guidance mode.
+ * - `auto` — register the patch guidance unless the tool had to be renamed
+ *   (another patch tool already owns the preferred name, e.g. a host-shipped
+ *   `apply_patch`), so two guidance texts never compete.
+ * - `on` — always register it.
+ * - `off` — never register it; the tool description keeps the routing line.
+ */
+export type GuidanceMode = 'auto' | 'on' | 'off'
 
 /** Deployment-owned configuration. */
 export interface Config {
@@ -42,6 +53,8 @@ export interface Config {
   deleteCommand?: string
   /** Custom move command template; paths arrive via env `DSH_PATCH_SOURCE`/`DSH_PATCH_TARGET`. */
   moveCommand?: string
+  /** System-prompt guidance registration. Defaults to `auto`. */
+  guidance?: GuidanceMode
   /** Treat `apply_patch` calls as dry runs unless the call passes `dryRun: false`. Defaults to false. */
   dryRunByDefault?: boolean
   /** Allow patch paths to traverse symbolic links. Defaults to false (symlinks are rejected). */
@@ -59,12 +72,13 @@ export const Config = z.object({
   toolName: z.string().default('apply_patch'),
   conflictPolicy: z.union(['rename', 'skip', 'fail'] as const).default('rename'),
   renameSuffix: z.string().default('_1'),
-  allowUnifiedDiff: z.boolean().default(true).volatile(),
-  allowCodexPatch: z.boolean().default(false).volatile(),
+  allowUnifiedDiff: maybeVolatile(z.boolean().default(true)),
+  allowCodexPatch: maybeVolatile(z.boolean().default(false)),
   deleteBackend: z.union(['shell', 'none'] as const).default('shell'),
   shellDialect: z.union(['auto', 'posix', 'pwsh'] as const).default('auto'),
   deleteCommand: z.string(),
   moveCommand: z.string(),
+  guidance: z.union(['auto', 'on', 'off'] as const).default('auto'),
   dryRunByDefault: z.boolean().default(false),
   followSymlinks: z.boolean().default(false),
   maxFiles: z.number().step(1).min(1).max(500).default(50),
@@ -83,6 +97,7 @@ export interface ResolvedConfig {
   shellDialect: ShellDialect
   deleteCommand?: string
   moveCommand?: string
+  guidance: GuidanceMode
   dryRunByDefault: boolean
   followSymlinks: boolean
   maxFiles: number
@@ -113,6 +128,7 @@ export function resolveConfig(config: Config | undefined): ResolvedConfig {
     shellDialect: c.shellDialect ?? 'auto',
     deleteCommand: typeof c.deleteCommand === 'string' && c.deleteCommand !== '' ? c.deleteCommand : undefined,
     moveCommand: typeof c.moveCommand === 'string' && c.moveCommand !== '' ? c.moveCommand : undefined,
+    guidance: c.guidance ?? 'auto',
     dryRunByDefault: c.dryRunByDefault ?? false,
     followSymlinks: c.followSymlinks ?? false,
     maxFiles: c.maxFiles ?? 50,

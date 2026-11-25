@@ -13,6 +13,22 @@ export interface MemoryFile {
   content: string
 }
 
+/**
+ * Build the structured refusal the host's sandboxed filesystem throws
+ * (`FsError` with `code: 'FS_SANDBOX_DENIED'`). The plugin's write path
+ * re-throws this shape untouched so the tool layer can turn it into the
+ * model-facing `[sandbox: …]` marker plus an escalation hint — a test that
+ * asserted on a generic `IO` error would not catch that being swallowed.
+ * @param key - the refused target.
+ * @param mode - the policy mode that refused it.
+ * @returns an Error carrying the host's code.
+ */
+export function sandboxDenied(key: string, mode: string): Error {
+  const error = new Error(`cannot write "${key}": file access denied under ${mode} mode`)
+  ;(error as Error & { code?: string }).code = 'FS_SANDBOX_DENIED'
+  return error
+}
+
 export class MemoryFs {
   files = new Map<string, string>()
   dirs = new Set<string>()
@@ -70,6 +86,11 @@ export class MemoryFs {
   async writeText(target: { targetKey: string }, content: string, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<{ operation: 'create' | 'update'; version: string; before: string | null; after: string }> {
     void expected
     if (signal?.aborted === true) throw new Error('FS_ABORTED: signal aborted')
+    // Enforce the policy at the mutation, exactly as the host's
+    // `SandboxedFileSystem.checkedTarget()` does. The plugin no longer keeps a
+    // planner-side fence (containment is the provider's decision at commit), so
+    // this is what proves "an out-of-workspace write is still refused".
+    this.enforceSandbox(target.targetKey, sandboxPolicy)
     if (this.failNextWrite !== null) {
       const error = this.failNextWrite
       this.failNextWrite = null
@@ -79,6 +100,33 @@ export class MemoryFs {
     this.writeCalls.push({ key: target.targetKey, content, intent: expected, signal, sandboxPolicy })
     this.files.set(target.targetKey, content)
     return { operation: before === null ? 'create' : 'update', version: `v:${Date.now()}`, before, after: content }
+  }
+
+  /**
+   * Refuse a mutation the per-call policy forbids, mirroring
+   * `@deepseek-ai/dsh-fs-sandbox`. Notably `workspace-write` allows THREE roots
+   * (`workspaceRoot`, `/tmp`, `os.tmpdir()` — see the host's
+   * `writableRoots`), which is the whole reason the plugin's single-root fence
+   * was wrong.
+   * @param key - canonical target key.
+   * @param sandboxPolicy - the per-call policy, when one was resolved.
+   */
+  private enforceSandbox(key: string, sandboxPolicy: unknown): void {
+    if (sandboxPolicy === undefined || sandboxPolicy === null) return
+    const mode = (sandboxPolicy as { mode?: string }).mode
+    if (mode === 'danger-full-access') return
+    if (mode === 'read-only') throw sandboxDenied(key, 'read-only')
+    if (mode !== 'workspace-write') return
+    const roots = [
+      (sandboxPolicy as { workspaceRoot?: string }).workspaceRoot,
+      '/tmp',
+      '/var/tmp',
+    ].filter((root): root is string => typeof root === 'string')
+    const contained = roots.some((root) => {
+      const normalized = root.replaceAll('\\', '/').replace(/\/$/, '')
+      return key === normalized || key.startsWith(`${normalized}/`)
+    })
+    if (!contained) throw sandboxDenied(key, 'workspace-write')
   }
 
   processPath(target: { targetKey: string }): string {

@@ -34,15 +34,16 @@ I segnaposto di questa guida sono:
 - `<profile>`: il profilo DSH da modificare, di solito `web`;
 - `dsh-patch-edit-plus`: il pacchetto npm, l'ID del plugin a runtime e l'id dell'unica riga inserita dalla patch del bundle.
 
-> **Intervallo DSH supportato: `>=0.2.0-rc.1 <0.2.1-0`.**
+> **Intervallo DSH supportato: da `0.1.0-rc.8` a `0.2.0-rc.2` (desktop incluso) — una singola versione, la v0.4.0.**
 >
 > Verificate prima la versione in esecuzione con `dsh --version`.
 >
 > | Versione DSH | Stato | Note |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | supportato | Linea obiettivo di questo ramo. Typecheck eseguito sui veri pacchetti peer `0.2.0-rc.1` (`npm run typecheck:0.2.0`); Delete/Move usano l'API in primo piano `ShellExecutor.execute()` + `result()`. |
-> | `0.1.7-rc.1+` | servito altrove | Mantenuto nel ramo `compat/0.1.7` / dist-tag `dsh-0.1.7` (versione del pacchetto lì: 0.2.1). |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | servito altrove | Mantenuto nel ramo precedente a 0.1.7 / dist-tag `dsh-0.1.5`. |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2` (desktop incluso) | supportato | Stessa v0.4.0. |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | supportato | Stessa v0.4.0 — nessuna scelta di ramo o dist-tag necessaria. |
+>
+> Su qualsiasi linea di host supportata installate `latest`: una singola versione serve sia i 0.1.x sia i 0.2.x. Dopo la pubblicazione, i dist-tag `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` e `dsh-0.1.2` punteranno tutti a 0.4.0.
 
 ## 0. Prerequisiti e individuazione del profilo
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 Installare esplicitamente una versione specifica:
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 La CLI ufficiale aggiorna automaticamente la dipendenza del profilo, il lockfile e `dsh.profile.bundles`. Non aggiungete una riga YAML manuale.
@@ -76,7 +77,7 @@ Il runtime DSH usa pnpm 11, la cui politica `minimumReleaseAge` può bloccare un
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. Riavviare l'host

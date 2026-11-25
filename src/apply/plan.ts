@@ -14,7 +14,6 @@ import {
   duplicatePathError,
   limitError,
   missingParentError,
-  pathEscapeError,
   symlinkRejectedError,
 } from '../errors.js'
 import type { ParsedPatch, PatchOp } from '../parse/types.js'
@@ -36,15 +35,16 @@ export interface PlannedPatch {
 
 interface ResolveServices {
   resolve(path: string, opts?: { cwd?: string; signal?: AbortSignal }): Promise<FsTarget>
-  contains(parent: FsTarget, child: FsTarget): boolean
   lstat(path: string, opts?: { cwd?: string }, signal?: AbortSignal): Promise<{ type: string } | undefined>
 }
 
 /**
  * Plan a parsed patch against the filesystem backend.
  * @param sandboxPolicy - the per-call policy the mutations will carry; its
- *   workspace root, when set, is the resolution cwd AND the containment root, so
- *   the path the engine writes is exactly the path the fence will measure.
+ *   workspace root, when set, is the resolution cwd, so the path the engine
+ *   writes is resolved exactly the way the native write/edit tools resolve it.
+ *   Containment itself is NOT decided here — the mounted filesystem provider
+ *   enforces the policy at commit (see the comment inside).
  * @throws {@link PatchError} on limits, path escapes, symlinks, missing parents or duplicate targets.
  */
 export async function buildPlan(ctx: Context, exec: ToolRunContext, parsed: ParsedPatch, cfg: ResolvedConfig, sandboxPolicy?: SandboxExecutionPolicy): Promise<PlannedPatch> {
@@ -54,22 +54,33 @@ export async function buildPlan(ctx: Context, exec: ToolRunContext, parsed: Pars
   const cwd = sandboxPolicy?.workspaceRoot ?? exec.agent?.session.header.cwd
   const resolveOpts = { cwd, signal: exec.signal }
 
-  // Containment root: the fencing root when the call carries a policy, else the
-  // session workspace. Mirrors the native write/edit tools' resolve options.
-  // Full access removes the containment fence, not the cwd used for relative paths.
-  // Keep the conservative workspace fence when no policy service is mounted.
-  const rootTarget = cwd === undefined || sandboxPolicy?.mode === 'danger-full-access'
-    ? undefined
-    : await fs.resolve(cwd, resolveOpts)
+  // NO planner-side containment fence. Sandbox containment is the mounted
+  // filesystem provider's decision at commit — the same contract the host's own
+  // `apply_patch` follows (`@deepseek-ai/dsh-tool-fs`: "Sandbox containment is
+  // the provider's decision at commit, as for write and edit").
+  //
+  // Keeping a second fence here was not merely redundant, it was WRONG: the
+  // host allows three writable roots under `workspace-write`
+  // (`@deepseek-ai/dsh-sandbox`'s `writableRoots`: `workspaceRoot`, `/tmp`,
+  // `os.tmpdir()`), while this planner knew only `workspaceRoot` — so a patch
+  // into the temp directory was rejected with "escapes the session workspace"
+  // even though the provider would have allowed it. A fence that duplicates the
+  // provider must track every future policy change; delegating removes the
+  // whole class. Path resolution still uses the policy's workspace root, so
+  // relative paths mean what they meant before.
+  //
+  // The symlink and duplicate-target checks below are NOT containment and stay
+  // here: they are plugin-level policy (`followSymlinks` config) and patch
+  // self-consistency, neither of which the provider performs.
 
   const seen = new Map<string, string>()
 
   const entries: PlannedEntry[] = []
   for (const op of parsed.ops) {
-    const target = await resolveChecked(fs, op.path, resolveOpts, rootTarget, cfg, seen)
+    const target = await resolveChecked(fs, op.path, resolveOpts, cfg, seen)
     let moveToTarget: FsTarget | undefined
     const moveTo = op.kind === 'update' ? op.moveTo : undefined
-    if (moveTo !== undefined) moveToTarget = await resolveChecked(fs, moveTo, resolveOpts, rootTarget, cfg, seen)
+    if (moveTo !== undefined) moveToTarget = await resolveChecked(fs, moveTo, resolveOpts, cfg, seen)
     if (op.kind === 'add') await checkParent(fs, op.path, resolveOpts)
     entries.push({ op, target, moveToTarget })
   }
@@ -77,17 +88,15 @@ export async function buildPlan(ctx: Context, exec: ToolRunContext, parsed: Pars
   return { format: parsed.format, entries }
 }
 
-/** Resolve one path with containment + symlink policy and duplicate tracking. */
+/** Resolve one path with symlink policy and duplicate tracking. */
 async function resolveChecked(
   fs: ResolveServices,
   path: string,
   resolveOpts: { cwd?: string; signal?: AbortSignal },
-  rootTarget: FsTarget | undefined,
   cfg: ResolvedConfig,
   seen: Map<string, string>,
 ): Promise<FsTarget> {
   const target = await fs.resolve(path, resolveOpts)
-  if (rootTarget !== undefined && !fs.contains(rootTarget, target)) throw pathEscapeError(path)
   if (!cfg.followSymlinks) await rejectSymlinks(fs, path, resolveOpts)
   const previous = seen.get(target.targetKey)
   if (previous !== undefined) throw duplicatePathError(path)

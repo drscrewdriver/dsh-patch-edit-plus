@@ -1,7 +1,7 @@
 {
   "name": "dsh-patch-edit-plus",
-  "version": "0.3.2",
-  "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move, targeting the DSH 0.2.0 line (declarative volatile settings).",
+  "version": "0.4.12",
+  "description": "Patch-style file editing for DeepSeek Harness: one apply_patch tool accepting git/unified diff (default) and Codex apply_patch syntax (opt-in), with all-or-nothing application, read-before-write intent dance, sandbox-aware delete/move,  (declarative volatile settings).",
   "type": "module",
   "repository": {
     "type": "git",
@@ -18,17 +18,42 @@
       "types": "./lib/types/client/index.d.ts",
       "default": "./lib/client.js"
     },
+    "./locale/*.json": "./locale/*.json",
     "./package.json": "./package.json"
   },
   "files": [
     "lib/",
+    "locale/",
     "cordis.patch.yml",
     "dsh.plugin.json",
     "screenshots.json",
     "README.md",
     "README.zh.md",
+    "README.de.md",
+    "README.es.md",
+    "README.fr.md",
+    "README.it.md",
+    "README.ja.md",
+    "README.ko.md",
+    "README.ru.md",
     "CHANGELOG.md",
     "CHANGELOG.zh.md",
+    "CHANGELOG.de.md",
+    "CHANGELOG.es.md",
+    "CHANGELOG.fr.md",
+    "CHANGELOG.it.md",
+    "CHANGELOG.ja.md",
+    "CHANGELOG.ko.md",
+    "CHANGELOG.ru.md",
+    "INSTALL.md",
+    "INSTALL.zh.md",
+    "INSTALL.de.md",
+    "INSTALL.es.md",
+    "INSTALL.fr.md",
+    "INSTALL.it.md",
+    "INSTALL.ja.md",
+    "INSTALL.ko.md",
+    "INSTALL.ru.md",
     "LICENSE",
     "assets/"
   ],
@@ -45,9 +70,10 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsdown",
+    "prepack": "npm run build",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc -p tsconfig.json",
-    "typecheck:0.2.0": "node scripts/typecheck-0.2.0.mjs",
+    "typecheck:0.2.1": "node scripts/typecheck-0.2.1.mjs",
     "lint": "eslint src tests scripts _smoke",
     "lint:fix": "eslint src tests scripts _smoke --fix",
     "test": "vitest run",
@@ -57,7 +83,7 @@
   },
   "engines": {
     "node": ">=20",
-    "dsh": ">=0.2.0-rc.1 <0.2.1-0"
+    "dsh": ">=0.1.0-rc.2 <0.3.0-0"
   },
   "license": "MIT",
   "keywords": [
@@ -72,12 +98,13 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-ui-settings": ">=0.2.0-rc.1 <0.2.1-0",
-    "@deepseek-ai/dsh-client-ui-slots": ">=0.2.0-rc.1 <0.2.1-0",
-    "@deepseek-ai/dsh-fs": ">=0.2.0-rc.1 <0.2.1-0",
-    "@deepseek-ai/dsh-sandbox": ">=0.2.0-rc.1 <0.2.1-0",
-    "@deepseek-ai/dsh-shell": ">=0.2.0-rc.1 <0.2.1-0",
-    "@deepseek-ai/dsh-tools": ">=0.2.0-rc.1 <0.2.1-0",
+    "@deepseek-ai/dsh-client-ui-settings": ">=0.1.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-fs": ">=0.1.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-sandbox": ">=0.1.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-settings": ">=0.1.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-shell": ">=0.1.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-tools": ">=0.1.0-rc.2 <0.3.0-0",
     "react": "^18.2.0"
   },
   "peerDependenciesMeta": {
@@ -104,14 +131,16 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "^3.18.4"
+    "@deepseek-ai/schemastery": "^3.18.5"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-fs": "0.2.0-rc.1",
-    "@deepseek-ai/dsh-sandbox": "0.2.0-rc.1",
-    "@deepseek-ai/dsh-shell": "0.2.0-rc.1",
-    "@deepseek-ai/dsh-tools": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-fs": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-sandbox": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-shell": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.5",
+    "@deepseek-ai/schemastery": "^3.18.4",
     "@eslint/js": "^9.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "~18.3.1",
@@ -120,10 +149,10 @@
     "tsdown": "^0.22.2",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^3.0.0",
-    "@deepseek-ai/schemastery": "^3.18.4"
+    "vitest": "^3.0.0"
   },
   "publishConfig": {
-    "tag": "dsh-0.2.0"
+    "tag": "latest",
+    "registry": "https://registry.npmjs.org"
   }
 }

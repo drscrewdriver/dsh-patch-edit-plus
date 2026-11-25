@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Patch-Editor",
+    "description": "Dateieditierung im Patch-Format für DSH: ein einziges apply_patch-Werkzeug, das git/unified-Diff standardmäßig annimmt (Codex-apply_patch-Syntax optional), ganz oder gar nicht angewendet, nachdem der Dateiinhalt geprüft wurde; liest vor dem Schreiben, löscht und verschiebt mit Sandboxbewusstsein, und kann vorher eine dryRun-Prüfung ausführen."
+  }
+}

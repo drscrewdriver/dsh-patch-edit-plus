@@ -34,15 +34,16 @@ Los marcadores de posición de esta guía son:
 - `<profile>`: el perfil de DSH que hay que modificar, normalmente `web`;
 - `dsh-patch-edit-plus`: el paquete npm, el ID del plugin en tiempo de ejecución y el id de la única fila que inserta el parche del bundle.
 
-> **Rango de DSH admitido: `>=0.2.0-rc.1 <0.2.1-0`.**
+> **Rango de DSH admitido: de `0.1.0-rc.8` a `0.2.0-rc.2` (desktop incluido) — una única versión, la v0.4.0.**
 >
 > Compruebe primero la versión en ejecución con `dsh --version`.
 >
 > | Versión de DSH | Estado | Notas |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | compatible | Línea objetivo de esta rama. Comprobación de tipos contra los paquetes peer reales `0.2.0-rc.1` (`npm run typecheck:0.2.0`); Delete/Move usan la API de primer plano `ShellExecutor.execute()` + `result()`. |
-> | `0.1.7-rc.1+` | atendido en otro lugar | Mantenido en la rama `compat/0.1.7` / el dist-tag `dsh-0.1.7` (versión del paquete allí: 0.2.1). |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | atendido en otro lugar | Mantenido en la rama anterior a 0.1.7 / el dist-tag `dsh-0.1.5`. |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2` (desktop incluido) | compatible | Misma v0.4.0. |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | compatible | Misma v0.4.0 — no hay que elegir rama ni dist-tag. |
+>
+> En cualquier línea de host admitida instale `latest`: una sola versión sirve tanto a los 0.1.x como a los 0.2.x. Tras la publicación, los dist-tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` y `dsh-0.1.2` apuntarán todos a 0.4.0.
 
 ## 0. Requisitos previos y descubrimiento del perfil
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 Instalar explícitamente una versión concreta:
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 La CLI oficial actualiza automáticamente la dependencia del perfil, el lockfile y `dsh.profile.bundles`. No añada una fila YAML manual.
@@ -76,7 +77,7 @@ El runtime de DSH usa pnpm 11, cuya política `minimumReleaseAge` puede bloquear
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. Reiniciar el host

@@ -1,5 +1,31 @@
 # Journal des modifications
 
+
+## [0.4.2] — 2026-10-17
+
+### Changements
+
+- **Ligne hôte `0.2.1-rc.1` prise en charge.** `engines.dsh`, les sept plages de pairs `@deepseek-ai/dsh-*` et `dsh.plugin.json` énumèrent désormais 16 versions rc exactes (`0.1.0-rc.2` … `0.2.1-rc.1`) au lieu de la plage `>=0.1.0-rc.8 <0.2.1-0` — depuis 0.2.1-alpha.4 la porte de compatibilité juge `engines.dsh` séparément, et le sentinel supérieur `-0` rejetait `0.2.1-rc.1`.
+- Les déclarations de compatibilité sont partout des énumérations exactes : pas d'intervalles ouverts, les hôtes futurs non testés sont refusés.
+- Les devDependencies passent à la vraie base de pairs `0.2.1-rc.1` ; `npm run typecheck:0.2.1` (ex `:0.2.0`) prouve cette base via des installations propres depuis le registry ; la matrice de typecheck couvre désormais sept lignes dont `0.2.1-rc.1`.
+
+### Ajouts
+
+- `prepack` exécute le build (npm pack ne peut plus embarquer un `lib/` périmé) ; `publishConfig.registry` épinglé sur le registry npm officiel.
+
+## [0.4.0] — 2026-10-09
+
+### Ajouté
+
+- **Une version unique pour toutes les lignes d'hôtes.** Une seule version (0.4.0) sert tous les hôtes DSH de `0.1.0-rc.8` à `0.2.0-rc.2` — les 15 rc plus desktop ; les plages de pairs énumèrent les 15 rc et `engines.dsh` déclare `>=0.1.0-rc.8`. Les branches compat retirées (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`) et le schéma de scission `main` sont supprimés ; après publication, les dist-tags npm `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` et `dsh-0.1.2` convergent tous vers 0.4.0.
+- **Trois générations de paramètres dans une seule base de code** : `.volatile()` déclaratif plus réenregistrement via `loader/volatile-update` sur 0.1.7+ (et desktop) ; `settings.installSection`/`register` d'instance sur 0.1.2/0.1.5 ; `installSettingsSection` au niveau module de `@deepseek-ai/dsh-settings` sur 0.1.0/0.1.1. La carte de configuration de la page du plugin (moitié client) n'a sa place que sur 0.1.7+/desktop et est absente avec élégance sur les anciennes lignes.
+- Chemin d'écriture `defineTool` avec dégradation logicielle du fs : sur les lignes dont le `fs` est dépourvu de write-intent, les écritures dégradent en écriture directe avec un seul `console.warn` au lieu d'échouer.
+- Matrice de typecheck sur six lignes, plus un garde-fou de smoke couvrant les scénarios d'absence élégante.
+
+### Modifié
+
+- **Rupture : `allowCodexPatch` est désormais `false` par défaut** (opt-in, aligné sur la ligne 0.2.0 ; l'ancien défaut de la ligne 0.1.7 était `true`). Les utilisateurs existants de la ligne 0.1.7 doivent l'activer manuellement après la mise à niveau vers 0.4.0.
+
 ## [0.3.0] — 2026-09-29
 
 ### Modifié

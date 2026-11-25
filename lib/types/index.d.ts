@@ -14,6 +14,8 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 import type { Config as PluginConfig } from './config.js';
+/** 设置命名空间（0.1.5 及以下实例/模块注册面用；0.1.7+ 声明式线不消费）。 */
+export declare const SETTINGS_NAMESPACE = "patch-edit-plus";
 declare module '@deepseek-ai/cordis' {
     interface Events {
         'loader/volatile-update': (paths: string[]) => void;

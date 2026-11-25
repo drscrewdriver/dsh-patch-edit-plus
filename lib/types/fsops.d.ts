@@ -16,11 +16,6 @@ import type { Context } from '@deepseek-ai/cordis';
 import type { ToolRunContext } from '@deepseek-ai/dsh-tools';
 import type { FsInfo, FsTarget, FsWriteOutcome } from '@deepseek-ai/dsh-fs';
 import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox';
-/**
- * Write one file through the full intent dance. Must stay byte-for-byte the
- * official sequence — the verification script asserts it.
- * @throws {@link PatchError} code `IO` when the backend rejects the write.
- */
 export declare function writeFile(ctx: Context, exec: ToolRunContext, target: FsTarget, content: string, sandboxPolicy: SandboxExecutionPolicy | undefined): Promise<FsWriteOutcome>;
 /** Read one file's text (whole file). */
 export declare function readFile(ctx: Context, exec: ToolRunContext, target: FsTarget): Promise<string>;

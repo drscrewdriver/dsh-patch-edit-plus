@@ -1,5 +1,46 @@
 # 更新日志
 
+## [0.4.8] — 2026-11-10
+
+### 新增
+
+- **在所有支持的宿主线注入 patch 路由段（系统提示层）。** DSH 0.2.2-rc.1 是第一个自带 `apply_patch` 的宿主（`dsh-tool-fs`，配置项 `applyPatch`），并首次配上 `tool:apply_patch` 提示段（order 为 `TOOL_APPLY_PATCH`，1350）与“优先于多次 edit”的 description 一句。更早的宿主两者都没有，插件提供的 patch 工具只能靠每次调用附带的 schema 描述。本版改为注册 `plugin:patch-edit-plus:apply_patch`（同序号，紧跟 `tool:edit`），并在工具 description 里带上同一句路由提示。
+- **取自 0.2.2**：`prefer apply_patch over separate edit calls` 的优先口径、hunk 上下文行建议、`被拒绝的 patch 不改变任何文件`、以及“工具不在作用域时输出空文本”。**未取**：`not rolled back`——本插件的验证是全有或全无，但写入阶段是顺序执行、不回滚，所以提示只陈述事实。
+- 新增配置项 `guidance: 'auto' | 'on' | 'off'`（默认 `auto`）。`auto` 仅在工具保持配置名时注册提示段；若因重名避让被改名（例如宿主已自带 `apply_patch`），不再注入第二套提示。
+
+### 兼容性
+
+- 提示段序号按 `TOOL_APPLY_PATCH` → `TOOL_EDIT + 50` → `1350` 逐级回退：`TOOL_APPLY_PATCH` 从 0.2.2 才有，`0.1.0-rc.8` 连 `getSectionOrder` 都没有，而非有限数会让 `systemPrompt.section()` 直接抛出。`systemPrompt` 服务经 cordis 注入门探测，**不**加入 `inject`，因此没有该服务的宿主照常加载，仅缺少提示段。
+- 本版尚未声明适配 DSH 0.2.2-rc.1：其 peer 枚举与“宿主内置 `apply_patch` 共存”不在本次范围内。
+
+0.4.4：宿主枚举补票 DSH 0.2.1-rc.3（声明面换代，契约零改动）。
+
+
+
+## [0.4.2] — 2026-10-17
+
+### 变更
+
+- **支持宿主 `0.2.1-rc.1` 线。** `engines.dsh`、全部 7 个 `@deepseek-ai/dsh-*` peer 范围与 `dsh.plugin.json` 改为 16 个精确 rc 枚举（`0.1.0-rc.2` … `0.2.1-rc.1`），不再使用 `>=0.1.0-rc.8 <0.2.1-0` 区间——0.2.1-alpha.4 起兼容闸门单独裁决 `engines.dsh`，旧的 `-0` 上界哨兵会把 `0.2.1-rc.1` 判为越界拒载。
+- 兼容声明一律精确枚举：不放开区间，未测未来宿主一律拒绝。
+- devDependencies 换代到真实 `0.2.1-rc.1` peer 基线；`npm run typecheck:0.2.1`（原 `:0.2.0`）从 registry 干净安装核验该基线；类型校验矩阵扩展到七条宿主线（含 `0.2.1-rc.1`）。
+
+### 新增
+
+- `prepack` 触发构建（npm pack 不再可能带出过期 `lib/`）；`publishConfig.registry` 钉死官方 npm registry。
+
+## [0.4.0] — 2026-10-09
+
+### 新增
+
+- **单版本覆盖全宿主线。** 一个版本（0.4.0）服务 `0.1.0-rc.8` 到 `0.2.0-rc.2` 的所有 DSH 宿主——全部 15 个 rc + desktop；peer 范围枚举全部 15 个 rc，`engines.dsh` 声明 `>=0.1.0-rc.8`。退役的 compat 分支（`compat/0.1.2`、`compat/0.1.5`、`compat/0.1.7`）与 `main` 分线方案全部移除；发布后 npm dist-tag `latest`、`dsh-0.2.0`、`dsh-0.1.7`、`dsh-0.1.5`、`dsh-0.1.2` 将全部收敛到 0.4.0。
+- **一份代码覆盖三代设置面**：0.1.7+（及 desktop）为声明式 `.volatile()` + `loader/volatile-update` 重注册；0.1.2/0.1.5 为实例 `settings.installSection`/`register`；0.1.0/0.1.1 为 `@deepseek-ai/dsh-settings` 模块级 `installSettingsSection`。插件页配置卡（client 半）仅在 0.1.7+/desktop 有席位，老线优雅缺席。
+- `defineTool` 编写路径与 fs 软降级：宿主 `fs` 缺 write-intent 的线上，写入自动降级为直写并 `console.warn` 一次，不再失败。
+- 六线 typecheck 矩阵，以及覆盖优雅缺席场景的 smoke 闸。
+
+### 变更
+
+- **破坏性变更：`allowCodexPatch` 默认值改为 `false`**（opt-in，与 0.2.0 线对齐；旧 0.1.7 线默认为 `true`）。存量 0.1.7 线用户升级到 0.4.0 后需手动打开该开关。
 
 ## [0.3.1] — 2026-10-01
 

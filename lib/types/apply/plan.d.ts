@@ -26,8 +26,10 @@ export interface PlannedPatch {
 /**
  * Plan a parsed patch against the filesystem backend.
  * @param sandboxPolicy - the per-call policy the mutations will carry; its
- *   workspace root, when set, is the resolution cwd AND the containment root, so
- *   the path the engine writes is exactly the path the fence will measure.
+ *   workspace root, when set, is the resolution cwd, so the path the engine
+ *   writes is resolved exactly the way the native write/edit tools resolve it.
+ *   Containment itself is NOT decided here — the mounted filesystem provider
+ *   enforces the policy at commit (see the comment inside).
  * @throws {@link PatchError} on limits, path escapes, symlinks, missing parents or duplicate targets.
  */
 export declare function buildPlan(ctx: Context, exec: ToolRunContext, parsed: ParsedPatch, cfg: ResolvedConfig, sandboxPolicy?: SandboxExecutionPolicy): Promise<PlannedPatch>;

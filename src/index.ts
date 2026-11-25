@@ -17,6 +17,14 @@ import type { Context } from '@deepseek-ai/cordis'
 import { resolveConfig } from './config.js'
 import type { Config as PluginConfig } from './config.js'
 import { registerApplyPatchTool } from './register.js'
+import { registerPatchGuidance } from './guidance.js'
+import { installSettingsCompat } from './compat.js'
+import { readVolatileBoolean } from './config.js'
+import { Config } from './config.js'
+import { registerPatchCommand, describeSection } from './tui-command.js'
+
+/** 设置命名空间（0.1.5 及以下实例/模块注册面用；0.1.7+ 声明式线不消费）。 */
+export const SETTINGS_NAMESPACE = 'patch-edit-plus'
 
 // The dev pins (0.1.2-rc.1 era) predate the 0.1.7 loader event. The 0.1.7 host
 // emits it for volatile-only config changes and passes the changed paths.
@@ -59,30 +67,81 @@ export function apply(ctx: Context, config?: PluginConfig): void {
   // 重解析一次，一次调用内是同一份快照；跨调用的最新值由事件驱动重取。
   const compositionEntry = config ?? {}
 
+  // 权威来源：设置层挂载时是解析后的 scope（installSection/installSettingsSection
+  // 的 setSource 在 attach 时先于 onChange 调用），否则是组合条目。
+  let readSource: () => PluginConfig = () => compositionEntry
+
   let disposer: (() => void) | null = null
+  let guidanceDisposer: (() => void) | null = null
   let registeredKey: string | null = null
 
   const rejudge = (): void => {
-    const next = resolveConfig(compositionEntry)
+    const next = resolveConfig(readSource())
     const key = JSON.stringify(next)
     if (key === registeredKey) return
     disposer?.()
-    disposer = registerApplyPatchTool(ctx, next) ?? null
+    disposer = null
+    guidanceDisposer?.()
+    guidanceDisposer = null
+    // `auto` guidance stays silent when rename avoidance had to step aside:
+    // another patch tool already owns the preferred name and carries its own
+    // guidance, so a second paragraph would only fight it.
+    let registeredName: string | null = null
+    disposer = registerApplyPatchTool(ctx, next, undefined, (name) => { registeredName = name }) ?? null
+    if (disposer !== null && registeredName !== null) {
+      const wanted = next.guidance === 'on' || (next.guidance === 'auto' && registeredName === next.toolName)
+      if (wanted) guidanceDisposer = registerPatchGuidance(ctx, registeredName, next.guidance)
+    }
     registeredKey = key
   }
+
+  // ── dsh-tui 终端面：`/patch` ─────────────────────────────────────
+  // TUI 不加载设置卡：冲突策略/删除后端/引导开关在终端里既看不到也改不了。
+  // 命令层只读回显设置节（settings.describe() 里本节内容），不猜字段名。
+  ;(ctx as unknown as {
+    inject?: (deps: string[], cb: (scope: Context) => void) => void
+  }).inject?.(['commands'], (scope) => {
+    registerPatchCommand(scope, {
+      ns: SETTINGS_NAMESPACE,
+      line: (key, value) => `  ${key.padEnd(20)}  ${value}`,
+      section: () => describeSection(scope, SETTINGS_NAMESPACE),
+    })
+  })
 
   ctx.effect(() => {
     rejudge()
     return () => {
       disposer?.()
       disposer = null
+      guidanceDisposer?.()
+      guidanceDisposer = null
       registeredKey = null
     }
   })
 
+  // 三代腰无条件挂载：loader 在每一代都经由 entry schema 传 config——live ref
+  // 连命令式宿主上也在（TL 实证），所以不能用「entry 带对象」判代。世代分流
+  // 全在设置服务面内做：0.1.7+ 服务无 register/installSection → 回调空转；
+  // 0.1.2/0.1.5 installSection；0.1.0/0.1.1 register。base 用 readVolatile 展平。
+  const plainBase: PluginConfig = {
+    ...compositionEntry,
+    allowUnifiedDiff: readVolatileBoolean(compositionEntry.allowUnifiedDiff as boolean | undefined, true),
+    allowCodexPatch: readVolatileBoolean(compositionEntry.allowCodexPatch as boolean | undefined, false),
+  }
+  installSettingsCompat(ctx, SETTINGS_NAMESPACE, Config, plainBase, {
+    setSource: (current) => { readSource = current },
+    onChange: () => { rejudge() },
+  })
+
   // 0.1.7+: 只有 volatile 字段变更才走这里（不 remount）；普通字段变更会整体
   // remount 插件，新一次 `apply` 自然读到全部新值。等值变更宿主不通知。
-  ctx.on('loader/volatile-update', () => {
-    rejudge()
-  })
+  // 老宿主不声明该事件——ctx.on 对未知事件名在极老 cordis 上的行为未知，
+  // 包一层 try/catch 让静默无更新成为唯一代价。
+  try {
+    ctx.on('loader/volatile-update', () => {
+      rejudge()
+    })
+  } catch {
+    // pre-0.1.7 host: no volatile updates; normal config edits remount the plugin.
+  }
 }

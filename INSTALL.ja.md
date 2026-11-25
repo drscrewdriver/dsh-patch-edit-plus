@@ -34,15 +34,16 @@
 - `<profile>`: 変更対象の DSH profile。通常は `web`。
 - `dsh-patch-edit-plus`: npm パッケージ名であり、ランタイムのプラグイン ID であり、bundle パッチが挿入する唯一の行の id でもあります。
 
-> **サポート対象の DSH 範囲: `>=0.2.0-rc.1 <0.2.1-0`。**
+> **サポート対象の DSH 範囲: `0.1.0-rc.8` ～ `0.2.0-rc.2`（desktop を含む）—— 単一バージョン v0.4.0。**
 >
 > まず `dsh --version` で実行中のバージョンを確認してください。
 >
 > | DSH バージョン | ステータス | 備考 |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | サポート対象 | 本ブランチのターゲットライン。registry から実際にインストールした `0.2.0-rc.1` ピアパッケージに対して型チェック済み（`npm run typecheck:0.2.0`）。Delete/Move は `ShellExecutor.execute()` + `result()` フォアグラウンド API を使用します。 |
-> | `0.1.7-rc.1+` | 別ブランチが担当 | `compat/0.1.7` ブランチ / `dsh-0.1.7` dist-tag がメンテナンス（同ラインのパッケージバージョンは 0.2.1）。 |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | 別ブランチが担当 | 0.1.7 以前のブランチ / `dsh-0.1.5` dist-tag がメンテナンス。 |
+> | `0.2.0-rc.1` ～ `0.2.0-rc.2`（desktop を含む） | サポート対象 | 同じ v0.4.0。 |
+> | `0.1.0-rc.8` ～ `0.1.7-rc.2` | サポート対象 | 同じ v0.4.0 —— ブランチや dist-tag の選択は不要です。 |
+>
+> サポート対象のホストラインであれば一律 `latest` をインストールしてください: 1 つのバージョンが 0.1.x と 0.2.x の双方に対応します。公開後、dist-tag の `latest`、`dsh-0.2.0`、`dsh-0.1.7`、`dsh-0.1.5`、`dsh-0.1.2` はすべて 0.4.0 を指します。
 
 ## 0. 前提条件と profile の探索
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 特定のバージョンを明示的にインストールする:
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 公式 CLI は profile の依存関係、ロックファイル、および `dsh.profile.bundles` を自動的に更新します。手動で YAML の行を追加しないでください。
@@ -76,7 +77,7 @@ DSH ランタイムは pnpm 11 を使用しており、その `minimumReleaseAge
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. ホストの再起動

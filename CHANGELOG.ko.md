@@ -1,6 +1,32 @@
 # 변경 이력
 
 
+
+## [0.4.2] — 2026-10-17
+
+### 변경
+
+- **호스트 라인 `0.2.1-rc.1` 지원.** `engines.dsh`, 7개의 `@deepseek-ai/dsh-*` peer 범위, `dsh.plugin.json`을 `>=0.1.0-rc.8 <0.2.1-0` 구간에서 16개 정확한 rc 열거(`0.1.0-rc.2` … `0.2.1-rc.1`)로 전환 — 0.2.1-alpha.4부터 호환 게이트가 `engines.dsh`를 단독 판정하므로 이전 `-0` 상한 센티널이 `0.2.1-rc.1`을 거부했습니다.
+- 호환 선언은 전부 정확한 열거: 열린 구간 없음, 미검증 미래 호스트는 거부.
+- devDependencies를 실제 `0.2.1-rc.1` peer 기준으로 교체; `npm run typecheck:0.2.1`(기존 `:0.2.0`)이 클린 설치로 동일 기준을 검증; 타입체크 매트릭스는 `0.2.1-rc.1`을 포함한 7개 라인으로 확장.
+
+### 추가
+
+- `prepack`이 빌드를 실행(npm pack의 오래된 `lib/` 동봉 방지); `publishConfig.registry`를 공식 npm registry에 고정.
+
+## [0.4.0] — 2026-10-09
+
+### 추가됨
+
+- **모든 호스트 라인을 단일 버전으로 커버.** 하나의 버전(0.4.0)이 `0.1.0-rc.8`부터 `0.2.0-rc.2`까지(15개 rc 전부 + desktop) 모든 DSH 호스트를 지원합니다. peer 범위는 15개 rc를 모두 열거하고 `engines.dsh`는 `>=0.1.0-rc.8`을 선언합니다. 은퇴한 compat 브랜치(`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`)와 `main` 분할 방식은 제거되었습니다. 배포 후 npm dist-tag `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5`, `dsh-0.1.2`는 모두 0.4.0으로 수렴합니다.
+- **하나의 코드베이스로 3세대 설정 면을 커버**: 0.1.7+(및 desktop)은 선언적 `.volatile()` + `loader/volatile-update` 재등록. 0.1.2/0.1.5는 인스턴스 `settings.installSection`/`register`. 0.1.0/0.1.1은 `@deepseek-ai/dsh-settings`의 모듈 수준 `installSettingsSection`. 플러그인 페이지 설정 카드(client 쪽)는 0.1.7+/desktop에만 자리가 있고 구 라인에서는 우아하게 부재합니다.
+- `defineTool` 저작 경로와 fs 소프트 강등: 호스트 `fs`에 write-intent가 없는 라인에서는 쓰기가 실패하지 않고 직접 쓰기로 자동 강등되며 `console.warn`을 1회만 출력합니다.
+- 6라인 typecheck 매트릭스와 우아한 부재 시나리오를 커버하는 smoke 게이트.
+
+### 변경됨
+
+- **파괴적 변경: `allowCodexPatch` 기본값이 `false`로 바뀌었습니다**(옵트인, 0.2.0 라인과 정렬. 기존 0.1.7 라인의 기본값은 `true`). 기존 0.1.7 라인 사용자는 0.4.0으로 업그레이드한 후 수동으로 켜야 합니다.
+
 ## [0.3.1] — 2026-10-01
 
 ### 수정

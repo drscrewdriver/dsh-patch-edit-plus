@@ -34,15 +34,16 @@
 - `<profile>`: 변경할 DSH profile이며, 보통 `web`입니다.
 - `dsh-patch-edit-plus`: npm 패키지 이름이자 런타임 플러그인 ID이며, bundle 패치가 삽입하는 단일 행의 id입니다.
 
-> **지원하는 DSH 범위: `>=0.2.0-rc.1 <0.2.1-0`.**
+> **지원하는 DSH 범위: `0.1.0-rc.8` ~ `0.2.0-rc.2`(desktop 포함) —— 단일 버전 v0.4.0.**
 >
 > 먼저 `dsh --version`으로 실행 중인 버전을 확인하십시오.
 >
 > | DSH 버전 | 상태 | 비고 |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | 지원됨 | 본 브랜치의 대상 라인. registry에서 실제 설치한 `0.2.0-rc.1` peer 패키지로 타입 검증 완료(`npm run typecheck:0.2.0`). Delete/Move는 `ShellExecutor.execute()` + `result()` 포그라운드 API를 사용합니다. |
-> | `0.1.7-rc.1+` | 다른 브랜치가 담당 | `compat/0.1.7` 브랜치 / `dsh-0.1.7` dist-tag가 유지보수(해당 라인의 패키지 버전은 0.2.1). |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | 다른 브랜치가 담당 | 0.1.7 이전 브랜치 / `dsh-0.1.5` dist-tag가 유지보수. |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2`(desktop 포함) | 지원됨 | 동일한 v0.4.0. |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | 지원됨 | 동일한 v0.4.0 —— 브랜치나 dist-tag를 고를 필요가 없습니다. |
+>
+> 지원되는 호스트 라인이라면 무엇이든 `latest`를 설치하십시오: 하나의 버전이 0.1.x와 0.2.x를 모두 지원합니다. 배포 후 dist-tag `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5`, `dsh-0.1.2`는 모두 0.4.0을 가리킵니다.
 
 ## 0. 사전 요구 사항과 profile 탐색
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 특정 버전을 명시적으로 설치하려면 다음과 같이 합니다.
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 공식 CLI가 profile 의존성, lockfile, `dsh.profile.bundles`를 자동으로 갱신합니다. YAML 행을 수동으로 추가하지 마십시오.
@@ -76,7 +77,7 @@ DSH 런타임은 pnpm 11을 사용하며, 이 버전의 `minimumReleaseAge` 정�
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. 호스트 재시작

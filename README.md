@@ -6,22 +6,27 @@ Patch-style file editing for [DeepSeek Harness (DSH)](https://github.com/deepsee
 
 ## DSH version compatibility
 
+**v0.4.0 is a single release covering the whole host line**: one version serves every DSH from `0.1.0-rc.2` to `0.2.1-rc.5` (all 20 rc releases plus desktop). The four retired lines (`compat/0.1.2`, `compat/0.1.5`, `compat/0.1.7`, and the `main` split-line scheme) are gone; after publishing, the npm dist-tags `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` and `dsh-0.1.2` all point to 0.4.0.
+
 | DSH version | Status | Notes |
 |---|---|---|
-| `0.2.0-rc.1+` | ✅ supported (this line, v0.3.0+) | Declarative settings: `allowCodexPatch` is marked `.volatile()` — the settings form renders automatically and `loader/volatile-update` re-registers the tool without a remount. No registration call. Delete/Move migrated to the `ShellExecutor.execute()` + `result()` foreground API. |
-| `0.1.7-rc.1+` | ↗ maintenance line | Served by the `compat/0.1.7` branch / `dsh-0.1.7` dist-tag (v0.2.1 there). 0.2.0's shell executor renamed `run` → `execute` (introduced between 0.1.2 and 0.1.7), so one codebase cannot serve both lines type-safely. |
-| `0.1.2-rc.1` ~ `0.1.5-rc.2` | ↗ maintenance line | Served by the pre-0.1.7 branch / `dsh-0.1.5` dist-tag. 0.1.7 removed the imperative settings APIs the dual-API fallback relied on. |
+| `0.2.0-rc.1+` | ✅ supported (same v0.4.0) | Declarative settings: fields marked `.volatile()` become the settings form, and `loader/volatile-update` re-registers the tool in place without a remount. The plugin-page configuration card (client half) has a seat on this line. |
+| `0.1.0-rc.2` ~ `0.1.7-rc.2` | ✅ supported (same v0.4.0) | Settings per generation: instance `settings.installSection`/`register` (0.1.2/0.1.5) or the module-level `installSettingsSection` of `@deepseek-ai/dsh-settings` (0.1.0/0.1.1). The plugin-page configuration card is gracefully absent here. |
 
-Settings are declarative on this line: fields marked `.volatile()` in `Config` become the settings form; the plugin subscribes to `loader/volatile-update` instead of receiving registration hooks.
+**Behavior change:** `allowCodexPatch` now defaults to `false` (opt-in, aligned with the 0.2.0 line). If you upgrade from the old 0.1.7 line (where the default was `true`), enable the switch manually after upgrading.
+
+Settings span three host generations, all served by this single version: on 0.1.7+ (and desktop) the config is declarative — fields marked `.volatile()` in `Config` are the settings form, and the plugin subscribes to `loader/volatile-update`; on 0.1.2/0.1.5 it uses the instance `settings.installSection`/`register` APIs; on 0.1.0/0.1.1 it uses the module-level `installSettingsSection` of `@deepseek-ai/dsh-settings`. The plugin-page configuration card (client half) only has a seat on 0.1.7+/desktop and is gracefully absent on older lines.
+
+Tool capabilities are identical on every line: one `apply_patch` tool, git/unified diff by default plus Codex opt-in, all-or-nothing application, the read-before-write intent dance (on host lines whose `fs` lacks write-intent, writes degrade to a direct write with a single `console.warn`), and sandbox-aware delete/move.
 
 ## Why patch at all? (tool routing guide)
 
-The tool description explicitly routes the model:
+Two surfaces route the model, mirroring what DSH 0.2.2-rc.1 ships for its own built-in `apply_patch`:
 
-- **Single small change in one already-read file** → prefer the native `edit` tool (a patch costs more tokens than a literal edit).
-- **Small change inside a LARGE file** → `apply_patch` (no need to echo the whole file).
-- **Batched changes across MANY files** → `apply_patch` (one call, verified atomically).
-- **New file with substantial content / delete / rename** → `apply_patch`.
+- **Tool description** — one line, repeated on every call: prefer `apply_patch` over separate `edit` calls when a change spans several files, several separated regions of one file, or adds/deletes/moves files. A single small replacement in an already-read file is still cheaper through the native `edit` tool.
+- **System-prompt section** (`plugin:patch-edit-plus:apply_patch`, order 1350, right after `tool:edit`) — the full guidance: give every hunk enough surrounding context lines to match exactly one place in the current file; every hunk is matched against the current content before anything is written, so a rejected patch changes nothing and retrying with a corrected patch beats falling back to many small edits; once writing starts, operations stop at the first failure.
+
+The section is emitted only while the tool is registered in the acting scope, and `auto` skips it when rename avoidance had to step aside for another `apply_patch` (a host-shipped one, for example) so the two guidance texts never compete. `guidance: 'auto' | 'on' | 'off'` controls this; the default is `auto`.
 
 ## Installation
 
@@ -93,6 +98,7 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 | `deleteBackend` | `shell` | `shell` or `none` (Delete/Move return a structured error). |
 | `shellDialect` | `auto` | `auto` (pwsh on win32) / `posix` / `pwsh`. |
 | `deleteCommand` / `moveCommand` | built-in | Custom command templates. Paths still arrive **only via env** (`DSH_PATCH_TARGET` / `DSH_PATCH_SOURCE`); never interpolate them into the command string. |
+| `guidance` | `auto` | System-prompt guidance: `auto` (skip when the tool had to be renamed), `on`, `off`. |
 | `dryRunByDefault` | `false` | Treat calls as dry runs unless `dryRun: false`. |
 | `followSymlinks` | `false` | Allow patch paths to traverse symlinks. |
 | `maxFiles` | `50` | Max file sections per patch. |
@@ -111,8 +117,8 @@ Enable with `allowCodexPatch: true`. When a Codex patch arrives while disabled, 
 
 ```bash
 npm install
-npm run typecheck        # against 0.2.0-rc.1 peers (devDependencies)
-npm run typecheck:0.2.0  # against real 0.2.0-rc.1 peer packages installed from the registry (dual-baseline proof)
+npm run typecheck        # against 0.2.1-rc.1 peers (devDependencies)
+npm run typecheck:0.2.1  # against real 0.2.1-rc.1 peer packages installed from the registry (dual-baseline proof)
 npm test                 # vitest, 92 tests
 npm run lint
 npm run build            # lib/
@@ -125,3 +131,13 @@ Manual verification on a live DSH (`dsh plugin --profile web add` → restart �
 ## License
 
 MIT
+
+## TUI 终端面（dsh-tui）
+
+dsh-tui 不加载插件的 client 半边（面板/卡片/设置页），也调不到插件自有 RPC；工具调用只显示一行摘要。人可读、人可操作的面只剩宿主斜杠命令。输出约定：单行 ≤100 字符、总行 ≤40、无 ANSI、两空格对齐；写操作默认 dry、加 `--yes` 才执行；`--json` 输出单行 JSON。
+
+| 命令 | 作用 |
+|---|---|
+| `/patch config` | apply_patch 设置节（冲突策略/删除后端/引导开关） |
+
+命令由插件自己在宿主侧注册（`ctx.inject(['commands'], …)`）：命令服务缺席的老宿主线上不激活、不报错。

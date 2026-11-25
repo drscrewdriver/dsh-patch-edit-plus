@@ -34,15 +34,16 @@ Die Platzhalter in dieser Anleitung sind:
 - `<profile>`: das zu ändernde DSH-Profil, üblicherweise `web`;
 - `dsh-patch-edit-plus`: das npm-Paket, die Laufzeit-Plugin-ID und die ID der einzigen Zeile, die der Bundle-Patch einfügt.
 
-> **Unterstützter DSH-Bereich: `>=0.2.0-rc.1 <0.2.1-0`.**
+> **Unterstützter DSH-Bereich: `0.1.0-rc.8` bis `0.2.0-rc.2` (einschließlich Desktop) — eine einzige Version, v0.4.0.**
 >
 > Prüfen Sie zunächst mit `dsh --version` die laufende Version.
 >
 > | DSH-Version | Status | Hinweise |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | unterstützt | Ziellinie dieses Zweigs. Typgeprüft gegen die echten `0.2.0-rc.1`-Peer-Pakete (`npm run typecheck:0.2.0`); Delete/Move nutzen die Foreground-API `ShellExecutor.execute()` + `result()`. |
-> | `0.1.7-rc.1+` | anderswo bedient | Gepflegt im Zweig `compat/0.1.7` / Dist-Tag `dsh-0.1.7` (Paketversion dort: 0.2.1). |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | anderswo bedient | Gepflegt im Zweig vor 0.1.7 / Dist-Tag `dsh-0.1.5`. |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2` (einschließlich Desktop) | unterstützt | Dieselbe v0.4.0. |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | unterstützt | Dieselbe v0.4.0 — keine Auswahl von Zweig oder Dist-Tag nötig. |
+>
+> Installieren Sie auf jeder unterstützten Host-Linie `latest`: eine einzige Version bedient 0.1.x und 0.2.x gleichermaßen. Nach der Veröffentlichung zeigen die Dist-Tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` und `dsh-0.1.2` alle auf 0.4.0.
 
 ## 0. Voraussetzungen und Profil-Ermittlung
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 Eine bestimmte Version explizit installieren:
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 Die offizielle CLI aktualisiert die Profil-Abhängigkeit, die Lockdatei und `dsh.profile.bundles` automatisch. Fügen Sie keine manuelle YAML-Zeile hinzu.
@@ -76,7 +77,7 @@ Die DSH-Laufzeit verwendet pnpm 11, dessen `minimumReleaseAge`-Richtlinie eine f
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. Host neu starten

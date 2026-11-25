@@ -34,15 +34,16 @@ Les espaces réservés de ce guide sont :
 - `<profile>` : le profil DSH à modifier, généralement `web` ;
 - `dsh-patch-edit-plus` : le paquet npm, l'identifiant du plugin à l'exécution, et l'id de l'unique ligne insérée par le patch de bundle.
 
-> **Plage de DSH prise en charge : `>=0.2.0-rc.1 <0.2.1-0`.**
+> **Plage de DSH prise en charge : de `0.1.0-rc.8` à `0.2.0-rc.2` (desktop inclus) — une version unique, la v0.4.0.**
 >
 > Vérifiez d'abord la version en cours avec `dsh --version`.
 >
 > | Version de DSH | Statut | Notes |
 > | --- | --- | --- |
-> | `0.2.0-rc.1` | pris en charge | Ligne cible de cette branche. Vérification de types effectuée contre les vrais paquets pairs `0.2.0-rc.1` (`npm run typecheck:0.2.0`) ; Delete/Move utilisent l'API de premier plan `ShellExecutor.execute()` + `result()`. |
-> | `0.1.7-rc.1+` | servi ailleurs | Maintenu par la branche `compat/0.1.7` / le dist-tag `dsh-0.1.7` (version du paquet : 0.2.1 là-bas). |
-> | `0.1.2-rc.1` ~ `0.1.5-rc.2` | servi ailleurs | Maintenu par la branche antérieure à 0.1.7 / le dist-tag `dsh-0.1.5`. |
+> | `0.2.0-rc.1` ~ `0.2.0-rc.2` (desktop inclus) | pris en charge | Même v0.4.0. |
+> | `0.1.0-rc.8` ~ `0.1.7-rc.2` | pris en charge | Même v0.4.0 — aucun choix de branche ni de dist-tag n'est nécessaire. |
+>
+> Sur toute ligne d'hôte prise en charge, installez `latest` : une seule version sert aussi bien les 0.1.x que les 0.2.x. Après publication, les dist-tags `latest`, `dsh-0.2.0`, `dsh-0.1.7`, `dsh-0.1.5` et `dsh-0.1.2` pointeront tous vers 0.4.0.
 
 ## 0. Prérequis et découverte du profil
 
@@ -65,7 +66,7 @@ dsh plugin --profile <profile> add dsh-patch-edit-plus -w
 Pour installer explicitement une version précise :
 
 ```bash
-dsh plugin --profile <profile> add dsh-patch-edit-plus@0.1.1 -w
+dsh plugin --profile <profile> add dsh-patch-edit-plus@0.4.0 -w
 ```
 
 La CLI officielle met à jour automatiquement la dépendance du profil, le lockfile et `dsh.profile.bundles`. N'ajoutez pas de ligne YAML manuelle.
@@ -76,7 +77,7 @@ Le runtime DSH utilise pnpm 11, dont la politique `minimumReleaseAge` peut bloqu
 
 ```yaml
 minimumReleaseAgeExclude:
-  - dsh-patch-edit-plus@0.1.1
+  - dsh-patch-edit-plus@0.4.0
 ```
 
 ## 2. Redémarrer l'hôte
