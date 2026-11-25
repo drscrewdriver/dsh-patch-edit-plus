@@ -18,6 +18,7 @@
  */
 import { createElement, useSyncExternalStore } from 'react'
 import type { JSX } from 'react'
+import { mountStarRow } from './star-row-copy.js'
 
 /** 本插件消费的 configForms 值形状（与 host ResolvedConfig 的易变布尔对齐）。 */
 export interface PatchEditPlusConfig {
@@ -211,6 +212,8 @@ export function PatchStyleCard(props: { form?: PatchFormScope | undefined }): JS
         onToggle={toggle}
       />
       {snapshot.status === 'ready' && !snapshot.writable && <p className="ppeReadonly">{t.readonlyHint}</p>}
+      {/* star 快车道行（单源 _tools/star-row，改副本无效）：纯 DOM 挂载，整行即链接 */}
+      <span ref={(n: HTMLElement | null) => { if (n && !n.firstChild) n.appendChild(mountStarRow()) }} />
     </section>
   )
 }

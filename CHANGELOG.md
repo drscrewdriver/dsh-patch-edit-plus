@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.13
+
+- 设置面新增 star 快车道行（单源 _tools/star-row 生成，10 语；GitHub 单色图标 + 仓库直达链接 + 一句工程话术，整行可点，无弹窗无打断）。
+- main 已合入 v0.4.12 发布线（沙箱围栏移交 provider、full-access 围栏 PR#1、engines.dsh 有界区间统一、9 语 locale 元数据、/patch 终端节等 24 提交），消除 main↔npm 版本背离。
+- dsh.plugin.json 与 package.json 版本号同步归一。
+
 ## 0.4.12
 
 ### Fixed
